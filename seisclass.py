@@ -16,8 +16,6 @@ __email__ = "vidalgonz8@gmail.com"
 __status__ = "Completed"
 
 import numpy as np
-import matplotlib
-matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 
@@ -497,13 +495,18 @@ class Seismic(object):
     @property
     def dt(self):
         return self._dt
-
-    def get_amplitude(self, xTrace, zLen = 0):
-        return self._SEIS[zLen][xTrace]
     
-    def get_rs(self, xTrace, zLen = 0):
-        return self._RS[zLen][xTrace]
+    @property
+    def get_amplitude(self):
+        return self._SEIS
+    
+    @property
+    def get_rs(self):
+        return self._RS 
 
+    def get_trace(self, xTrace, zLen = 0):
+        return self._SEIS[zLen][xTrace], self._RS[zLen][xTrace]
+    
     def add_trace(self, trace, xTrace, zLen):
         if trace._ns == self._ySamples:
             self._SEIS [zLen][xTrace] = trace.signal
@@ -512,9 +515,6 @@ class Seismic(object):
             print(('TraceNS = {} != Seismic ySamples ={}').format(trace._ns, \
                     self._ySamples))
             raise ValueError("Incompatible number of samples")
-
-    def get_cube(self):
-        return self._SEIS
 
     def from_file(self, fname, zLen=0):
         '''
@@ -603,22 +603,23 @@ class Seismic(object):
 ###################################################################################
 
 def main():
-    #ss = Seismic(1, 100, 5000) 
-    #w = Wavelet(wtype='bp', wf=[15,35,55,75], wdt=0.0001)
-    #rs = ReflectivityS(ns=5000) 
-    #rs.add_pulse(700, 0.5)
-    #rs.add_pulse(2500, -.1)
-    #rs.add_pulse(2000, .71)
-    #rs.add_pulse(4000, -.29)
-    #tr = Trace(dt=0.001, wavelet=w, rseries=rs.rserie)
-    #for i in range(ss.xTraces):
-    #    ss.add_trace(tr, i, 0)
-    #
-    #ss.plot_density()
-    #ss.plot_seismogram(); plt.show()
+    global ss
+    ss = Seismic(1, 100, 5000) 
+    w = Wavelet(wtype='bp', wf=[15,35,55,75], wdt=0.0001)
+    rs = ReflectivityS(ns=5000) 
+    rs.add_pulse(700, 0.5)
+    rs.add_pulse(2500, -.1)
+    rs.add_pulse(2000, .71)
+    rs.add_pulse(4000, -.29)
+    tr = Trace(dt=0.001, wavelet=w, rseries=rs.rserie)
+    for i in range(ss.xTraces):
+        ss.add_trace(tr, i, 0)
     
-    #ss.normalize()
-    #ss.plot_seismogram(); plt.show()
+    ss.plot_density()
+    ss.plot_seismogram(); plt.show()
+    
+    ss.normalize()
+    ss.plot_seismogram(); plt.show()
 
     return 0
 

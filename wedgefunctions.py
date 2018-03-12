@@ -16,9 +16,9 @@ __status__ = "En Desarrollo"
 
 import sys
 import numpy as np
-from seisclass import *
-from plots import *
-from obspy.signal.tf_misfit import cwt
+from seisclass import*
+from plots import*
+from utils import*
 
 def digitize_top_base(Rs, model, dt, iAngle, t, interf):
     vp = model.vp[:-1]
@@ -58,8 +58,6 @@ def cmp_gather_simple(dh, maxAng, step, topDepth, velocities):
     except:
         radmax_upwards = alpha_tr(radmax_downwards, v1, v2)
     
-    print(('Max down: {} - Max up: {}').format(radmax_downwards, radmax_upwards))
-    
     Angles_in = np.zeros(0, dtype='float')
     Angles_top = np.zeros(0, dtype='float')
     Angles_base = np.zeros(0, dtype='float')
@@ -85,10 +83,10 @@ def cmp_gather_simple(dh, maxAng, step, topDepth, velocities):
     return Angles_top, Angles_base, RayPath_top, RayPath_base, TopTime, BaseTime
 
 def create_timeModel(seismic, model, dtc, Theta, tBottom, tTop, Q=False):
-    print('\n\n Synthetic elastic TIME wedge calculations\n\n')
+    print('\n\n Synthetic simple time model calculations\n\n')
     FreqVel = model.vp[0]
     for z in range(seismic.zLen):
-        print(('Computing dh #{}').format(z))
+        print(('Computing dh #{} of {}').format(z+1, seismik.zLen))
         for x in range(seismic.xTraces):
             R = ReflectivityS( ns = seismic.ySamples )
             #top reflector
@@ -113,29 +111,9 @@ def create_timeModel(seismic, model, dtc, Theta, tBottom, tTop, Q=False):
 
 ###################################################################################
 
-def amplitudes_calc(seismic, timelocmin, timelocmax):
-    peakA = np.zeros(seismic.xTraces * seismic.zLen, dtype='float')
-    for z in range(seismic.zLen):
-        print(('Computing attributes for shot #{}').format(z))
-        for x in range(seismic.xTraces):
-            ix = z*seismic.xTraces+x
-            peakA[ix] = peak_amplitude(trace=seismic.get_amplitude(x, z),\
-                    loc=[timelocmin[ix], timelocmax[ix]], dt=seismic.dt)
-    return peakA
 
-def spectral_calc(seismic, timelocmin, timelocmax):
-    pFreq = np.zeros(seismic.xTraces * seismic.zLen, dtype='float')
-    for z in range(seismic.zLen):
-        print(('Computing attributes for shot #{}').format(z))
-        for x in range(seismic.xTraces):
-            ix = z*seismic.xTraces+x
-            pFreq[ix] = peak_frequency(trace=seismic.get_amplitude(x, z),\
-                    loc=[timelocmin[ix], timelocmax[ix]], dt=seismic.dt, w0=6)
-    return pFreq
-
-def simple_array_maker(model, dhmax, dhstep, angMax, angStep, topDepth):
+def simple_array_maker(model, dhmin, dhmax, dhstep, angMax, angStep, topDepth):
     angMin = 0
-    dhmin = 0.5
     dhVec = np.arange(dhmin, dhmax+dhstep, dhstep)
     print("Vector DH:")
     print(dhVec)
@@ -182,12 +160,13 @@ def main():
     mod = Model(mtype)
     dt = 0.0001 #ms
     topdepth = 2005
-    angmax = 40
+    angmax = 20
     angstep = 1
-    dhmax = 50
+    dhmin = 0.5
+    dhmax = 20
     dhstep = 1.5 
     #global TH, B, RU, RL, TT, TB, DH
-    TH, B, RU, RL, TT, TB, DH= simple_array_maker(mod, dhmax, dhstep, angmax, angstep, \
+    TH, B, RU, RL, TT, TB, DH= simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
 
     dimX = TH.shape[1]
@@ -205,15 +184,17 @@ def main():
     Bmin = Tmax
     Bmax = TB + 0.1
     
-    for dh in range(0, 31, 3):
+    print('\nStarting AFVO single computations\n')
+    for dh in range(0, seismik.zLen, 5):
+        print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
+        plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+                Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
         seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-        plot_AFVO(seismik._SEIS[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-                Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep+0.5))
         plt.close('all') 
     
     dh = seismik.zLen-1
     seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-    plot_AFVO(seismik._SEIS[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
             Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
     
     #global fullArray
@@ -224,14 +205,14 @@ def main():
     theta = np.degrees(TH.reshape(totalTraces))
     dh = DH.reshape(totalTraces) 
     
-    #top
+    print('\nStarting AFVO map computations: Top reflector')
     tminT = tt - 0.1
     tmaxT = 0.5 * (tt + tb)
 
     fullArray.T[0] = theta
     fullArray.T[1] = dh
-    fullArray.T[2] = amplitudes_calc(seismik, tminT, tmaxT)
-    fullArray.T[3] = spectral_calc(seismik, tminT, tmaxT)
+    fullArray.T[2] = AVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
+    fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
 
     fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
@@ -245,12 +226,12 @@ def main():
     plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'freq', 'BsimpleTop')
 
-    #base
+    print('\nStarting AFVO map computations: Base reflector')
     tminB = 0.5 * (tb + tt)
     tmaxB = tb + 0.1 
     
-    fullArray.T[2] = amplitudes_calc(seismik, tminB, tmaxB)
-    fullArray.T[3] = spectral_calc(seismik, tminB, tmaxB)
+    fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
+    fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
 
     fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
@@ -260,7 +241,7 @@ def main():
             ['dhT','angleT'], 'freq', 'BsimpleBase')
  
     end = time.time()
-    print(("Elapsed time {}s").format(end - start))
+    print(("\nElapsed time {}s\n").format(end - start))
 
     plt.close('all') 
     return 0

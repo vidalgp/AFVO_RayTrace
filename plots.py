@@ -1,12 +1,12 @@
 import numpy as np
-import matplotlib
-matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from wedgefunctions import *
-from scipy.interpolate import CubicSpline 
+from scipy.interpolate import CubicSpline
+from utils import*
+import seaborn as sns
 
 def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, name=''):
+    sns.set()
     topRi = AVO(gather, tmin1, tmax1, dt)
     topFi = FVO(gather, tmin1, tmax1, dt)
 
@@ -27,11 +27,10 @@ def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, name=''):
     ax0 = plt.subplot(gs[0,0])
     ax0.plot(angles_new, ftopRi(angles_new), label='Tope', lw=1)
     ax0.plot(angles, topRi, 'o', label='Data', markersize=1.5, color='k')
-    ax0.plot(angles_new, fbaseRi(angles_new), '--', label='Base', lw=1)
+    ax0.plot(angles_new, fbaseRi(angles_new), '--', color='y', label='Base', lw=1)
     ax0.plot(angles, baseRi, 'o', markersize=1.5, color='k')
-    ax0.set_xlabel(r'Ángulo de incidencia $\theta$ [$\circ$]')
-    ax0.set_ylabel(r'Coeficiente de Reflexión R($\theta$)')
-    ax0.grid()
+    ax0.set_xlabel(r'Ángulo de incidencia $\theta$ [$\circ$]', fontsize=8)
+    ax0.set_ylabel(r'Coeficiente de Reflexión R($\theta$)', fontsize=8)
     ax0.axhline(color='black', linewidth=0.5)
     ax0.axvline(color='black', linewidth=0.5)
     ax0.set_title('Gráfico AVO')
@@ -40,18 +39,17 @@ def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, name=''):
     ax1 = plt.subplot(gs[1,0])
     ax1.plot(angles_new, ftopFi(angles_new), label='Tope', lw=1)
     ax1.plot(angles, topFi, 'o', label='Data', markersize=1.5, color='k')
-    ax1.plot(angles_new, fbaseFi(angles_new), '--', label='Base', lw=1)
+    ax1.plot(angles_new, fbaseFi(angles_new), '--', color='y', label='Base', lw=1)
     ax1.plot(angles, baseFi, 'o', markersize=1.5, color='k')
-    ax1.set_xlabel(r'Ángulo de incidencia $\theta$ [$\circ$]')
-    ax1.set_ylabel(r'Frecuencia CWT pico F($\theta$)')
-    ax1.grid()
+    ax1.set_xlabel(r'Ángulo de incidencia $\theta$ [$\circ$]', fontsize=8)
+    ax1.set_ylabel(r'Frecuencia CWT pico F($\theta$) [Hz]', fontsize=8)
     ax1.set_title('Gráfico FVO')
     ax1.legend(loc='center left', bbox_to_anchor=(1, 0.5), fancybox=True)
 
     plt.tight_layout()
     plt.savefig( name + 'AFVOplot.png', bbox_inches='tight')
-
-
+    
+    sns.reset_orig()
 
 def plot_map(pointsx, pointsy, peak_vals, xmin, xmax, ymin, ymax, axis, type=None, \
         name=''):
