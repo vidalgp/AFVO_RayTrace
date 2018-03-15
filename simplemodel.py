@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------
-# Filename: wedgefunctions.py
 #  Purpose: A.FVO wedge Analysis
 #   Author: Vidal Gonzalez P
 #    Email: vidalgonz8@gmail.com
@@ -164,8 +163,8 @@ def main():
     topdepth = 2005
     angmax = 40
     angstep = 2
-    dhmin = 50
-    dhmax = 51
+    dhmin = 100
+    dhmax = 101
     dhstep = 1 
     global TH, B, RU, RL, TT, TB, DH
     TH, B, RU, RL, TT, TB, DH= simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
@@ -179,7 +178,7 @@ def main():
     ymax = dimY*dt
     ymin = TT[0].min()* 0.95
     seismik = Seismic(dt, dimX, dimY, dimZ)
-    create_timeModel(seismik, mod, dt, TH, TB, TT, Aq)
+    create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
     
     Tmin = TT - 0.1
     Tmax = 0.5 * (TT + TB)
@@ -189,19 +188,19 @@ def main():
     print('\nStarting AFVO single computations\n')
     for dh in range(0, seismik.zLen, 1):
         print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
-        #plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-        #        Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
-        plot_AFVO_exact(seismik.get_amplitude[dh], np.degrees(TH[dh]), TT[dh], TB[dh], \
-                seismik.dt,('TopBase_{}').format(dh*dhstep))
+        plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+                Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
+        #plot_AFVO_exact(seismik.get_amplitude[dh], np.degrees(TH[dh]), TT[dh], TB[dh], \
+        #        seismik.dt,('TopBase_{}').format(dh*dhstep))
         seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
         plt.close('all') 
     
     dh = seismik.zLen - 1
     seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-    #plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-    #        Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
-    plot_AFVO_exact(seismik.get_amplitude[dh], np.degrees(TH[dh]), TT[dh], TB[dh], \
-            seismik.dt,('TopBase_{}').format(dh*dhstep))
+    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+            Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
+    #plot_AFVO_exact(seismik.get_amplitude[dh], np.degrees(TH[dh]), TT[dh], TB[dh], \
+    #        seismik.dt,('TopBase_{}').format(dh*dhstep))
     
     global fullArray, tminT, tmaxT
     totalTraces = seismik.zLen * seismik.xTraces
