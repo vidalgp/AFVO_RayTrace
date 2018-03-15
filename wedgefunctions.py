@@ -70,7 +70,9 @@ def cmp_gather_simple(dh, maxAng, step, topDepth, velocities):
         Angles_in = np.append(Angles_in, rad_in)
         Angles_base = np.append(Angles_base, alpha)
         Angles_top = np.append(Angles_top, theta)
-        if ((theta >= radmax_downwards) or (alpha >= radmax_upwards)):
+        #if ((theta >= radmax_downwards) or (alpha >= radmax_upwards)):
+        #    break
+        if theta >= np.radians(maxAng):
             break
         i += 1
     
@@ -160,17 +162,17 @@ def main():
     mod = Model(mtype)
     dt = 0.0001 #ms
     topdepth = 2005
-    angmax = 20
-    angstep = 1
-    dhmin = 0.5
-    dhmax = 20
-    dhstep = 1.5 
-    #global TH, B, RU, RL, TT, TB, DH
+    angmax = 40
+    angstep = 2
+    dhmin = 50
+    dhmax = 51
+    dhstep = 1 
+    global TH, B, RU, RL, TT, TB, DH
     TH, B, RU, RL, TT, TB, DH= simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
 
     dimX = TH.shape[1]
-    dimY = int(TB[-1].max()/dt * (1.10))
+    dimY = int(TB[-1].max()/dt * (1.50))
     dimZ = TH.shape[0]
 
     global seismik, ymin, ymax
@@ -185,19 +187,23 @@ def main():
     Bmax = TB + 0.1
     
     print('\nStarting AFVO single computations\n')
-    for dh in range(0, seismik.zLen, 5):
+    for dh in range(0, seismik.zLen, 1):
         print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
-        plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-                Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
+        #plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+        #        Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
+        plot_AFVO_exact(seismik.get_amplitude[dh], np.degrees(TH[dh]), TT[dh], TB[dh], \
+                seismik.dt,('TopBase_{}').format(dh*dhstep))
         seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
         plt.close('all') 
     
-    dh = seismik.zLen-1
+    dh = seismik.zLen - 1
     seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-            Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
+    #plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+    #        Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
+    plot_AFVO_exact(seismik.get_amplitude[dh], np.degrees(TH[dh]), TT[dh], TB[dh], \
+            seismik.dt,('TopBase_{}').format(dh*dhstep))
     
-    #global fullArray
+    global fullArray, tminT, tmaxT
     totalTraces = seismik.zLen * seismik.xTraces
     fullArray = np.zeros([totalTraces, 4], dtype='float') 
     tt = TT.reshape(totalTraces)

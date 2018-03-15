@@ -41,7 +41,32 @@ def peak_frequency(trace, loc, dt, fmin=1, fmax=90, w0=6):
     return nf[idxmax[0]//2]
 
 def peak_amplitude(trace, loc, dt):
-    dsl = int(loc[0] / dt)
-    dsh = int(loc[1] / dt)
-    return max(trace[dsl:dsh].max(), trace[dsl:dsh].min(), key=abs)
+    if not all(loc):
+        return np.nan
+    else:
+        dsl = int(loc[0] / dt)
+        dsh = int(loc[1] / dt)
+        return max(trace[dsl:dsh].max(), trace[dsl:dsh].min(), key=abs)
+
+def peak_amplitude_exact(trace, loc, dt):
+    if not loc:
+        return np.nan
+    else:
+        dsl = int(loc / dt)
+        return trace[dsl]
+
+def AVO_exact(seismic, timeloc, dts):
+    if len(seismic.shape) == 3:
+        zLen, xTraces = seismic.shape[:2]
+    else:
+        zLen = 1
+        xTraces, ySamples = seismic.shape
+        seismic = seismic.reshape([zLen, xTraces, ySamples])
+    peakA = np.zeros(xTraces * zLen, dtype='float64')
+    for z in range(zLen):
+        for x in range(xTraces):
+            ix = z * xTraces + x
+            peakA[ix] = peak_amplitude_exact(trace=seismic[z][x],\
+                    loc= timeloc[x], dt=dts)
+    return peakA
 

@@ -551,7 +551,7 @@ class Seismic(object):
         cbar.ax.set_xticklabels(['-', '+'])
         cbar.ax.tick_params(labelsize=8)
         plt.tight_layout()
-        plt.savefig(('seismo_den{}.png').format(z), bbox_inches='tight')
+        plt.savefig(('fig/seismo_den{}.png').format(z), bbox_inches='tight')
 
     
     def plot_seismogram(self, ymax=None, ymin = 0, z = 0, depth = False, excursion=1):
@@ -575,7 +575,7 @@ class Seismic(object):
         ax1.set_xlabel(xTitle, fontsize=14)
         ax1.set_ylabel(yLabel)
         plt.tight_layout()
-        plt.savefig(('seismo_wig{}.png').format(z), bbox_inches='tight')
+        plt.savefig(('fig/seismo_wig{}.png').format(z), bbox_inches='tight')
 
     def plot_vawig(self, axhdl, data, t, excursion):
         '''
