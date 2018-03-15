@@ -104,35 +104,3 @@ def plot_map(pointsx, pointsy, peak_vals, xmin, xmax, ymin, ymax, axis, type=Non
     name = 'fig/' + type + '_' + name + '.png'
     plt.savefig(name, bbox_inches='tight')
 
-def plot_AFVO_exact(gather, angles, t1, t2, dt, name=''):
-    sns.set()
-    topRi = AVO_exact(gather, t1, dt)
-
-    baseRi = AVO_exact(gather, t2, dt)
-    
-    ftopRi = CubicSpline(angles, topRi)
-    
-    fbaseRi = CubicSpline(angles, baseRi)
-
-    angles_new = np.linspace(angles.min(), angles.max(), 100, endpoint=True)
-
-    fig = plt.figure(figsize=(8, 6))
-    gs = gridspec.GridSpec(1,1)
-
-    ax0 = plt.subplot(gs[0,0])
-    ax0.plot(angles_new, ftopRi(angles_new), label='Tope', lw=1)
-    ax0.plot(angles, topRi, 'o', label='Data', markersize=1.5, color='k')
-    ax0.plot(angles_new, fbaseRi(angles_new), '--', color='y', label='Base', lw=1)
-    ax0.plot(angles, baseRi, 'o', markersize=1.5, color='k')
-    ax0.set_xlabel(r'Ángulo de incidencia $\theta$ [$\circ$]', fontsize=8)
-    ax0.set_ylabel(r'Coeficiente de Reflexión R($\theta$)', fontsize=8)
-    ax0.axhline(color='black', linewidth=0.5)
-    ax0.axvline(color='black', linewidth=0.5)
-    ax0.set_title('Gráfico AVO')
-    ax0.legend(loc='center left', bbox_to_anchor=(1, 0.5), fancybox=True)
-
-    plt.tight_layout()
-    plt.savefig( 'fig/' + name + 'AVOplot.png', bbox_inches='tight')
-    
-    sns.reset_orig()
-

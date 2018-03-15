@@ -1,5 +1,34 @@
 import numpy as np
 from obspy.signal.tf_misfit import cwt
+from seisclass import*
+from simplemodel import digitize_top_base
+
+def create_timeModel(seismic, model, dtc, Theta, tBottom, tTop, Q=False):
+    print('\n\n Synthetic simple time model calculations\n\n')
+    FreqVel = model.vp[0]
+    for z in range(seismic.zLen):
+        print(('Computing dh #{} of {}').format(z+1, seismic.zLen))
+        for x in range(seismic.xTraces):
+            R = ReflectivityS( ns = seismic.ySamples )
+            #top reflector
+            digitize_top_base(R, model, dtc, Theta[z][x], tTop[z][x], 'top')
+            Wv = Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=seismic.dt)
+            #Wv = Wavelet(wtype='r', wf=75)
+            if Q:
+                Wv.apply_Q(tTop[z][x], FreqVel)
+            trace = Trace(wavelet = Wv, rseries = R.rserie)
+            #base reflector
+            R = ReflectivityS( ns = seismic.ySamples )
+            digitize_top_base(R, model, dtc, Theta[z][x], tBottom[z][x], 'base')
+            Wv = Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=seismic.dt)
+            #Wv = Wavelet(wtype='r', wf=75)
+            if Q:
+                Wv.apply_Q(tBottom[z][x], FreqVel)
+            traceB = Trace(wavelet = Wv, rseries = R.rserie)
+            trace+= traceB
+            #calculation made on individual trace are made here
+            seismic.add_trace(trace, x, z)
+
 
 def AVO(seismic, timelocmin, timelocmax, dts):
     if len(seismic.shape) == 3:
@@ -47,26 +76,4 @@ def peak_amplitude(trace, loc, dt):
         dsl = int(loc[0] / dt)
         dsh = int(loc[1] / dt)
         return max(trace[dsl:dsh].max(), trace[dsl:dsh].min(), key=abs)
-
-def peak_amplitude_exact(trace, loc, dt):
-    if not loc:
-        return np.nan
-    else:
-        dsl = int(loc / dt)
-        return trace[dsl]
-
-def AVO_exact(seismic, timeloc, dts):
-    if len(seismic.shape) == 3:
-        zLen, xTraces = seismic.shape[:2]
-    else:
-        zLen = 1
-        xTraces, ySamples = seismic.shape
-        seismic = seismic.reshape([zLen, xTraces, ySamples])
-    peakA = np.zeros(xTraces * zLen, dtype='float64')
-    for z in range(zLen):
-        for x in range(xTraces):
-            ix = z * xTraces + x
-            peakA[ix] = peak_amplitude_exact(trace=seismic[z][x],\
-                    loc= timeloc[x], dt=dts)
-    return peakA
 
