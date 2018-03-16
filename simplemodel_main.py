@@ -32,7 +32,7 @@ def main():
     ymin = TT[0].min()* 0.95
     seismik = Seismic(dt, dimX, dimY, dimZ)
     create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
-    
+        
     Tmin = TT - 0.1
     Tmax = 0.5 * (TT + TB)
     Bmin = Tmax

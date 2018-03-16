@@ -1,3 +1,6 @@
+import numpy as np
+from scipy.interpolate import CubicSpline
+import matplotlib.pyplot as plt
 
 def nmo(cmp, dt, offsets, velocities):
     nmo = np.zeros_like(cmp)

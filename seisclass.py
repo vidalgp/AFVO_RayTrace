@@ -298,13 +298,13 @@ class ReflectivityS(object):
         self._rserie[ix] += rval
 
     def add_layer_reflection(self, vp, vs, rho, iAngle, ix, reflector):
-        from bruges.reflection import zoeppritz_element
         '''
         type: 'A' for Acoustic Impedance / 'B' for Elastic Impedance
-        iAngle: angle of incidence
+        iAngle: angle of incidence degrees
         ix = digitizing index [0, ns-1]
         vp, vs and rho are tuples defining the distincts parameters of adjacent layers
         '''
+        from bruges.reflection import zoeppritz_element
         if reflector is 'top':
             self._rserie[ix] += np.real(zoeppritz_element(vp[0], vs[0], rho[0], \
                     vp[1], vs[1], rho[1], iAngle, 'PdPu'))
@@ -318,24 +318,24 @@ class ReflectivityS(object):
                     vp[0], vs[0], rho[0], beta, 'PdPd'))
             self._rserie[ix] += final
     
-#    def add_wedge_reflection(self, vp, vs, rho, iAngle, ix, reflector, wedgeAngle=0):
-#        from bruges.reflection import zoeppritz_element
-#        if reflector is 'top':
-#            self._rserie[ix] += np.real(zoeppritz_element(vp[0], vs[0], rho[0], \
-#                    vp[1], vs[1], rho[1], iAngle, 'PdPu'))
-#        elif reflector is 'base':
-#            transm = np.real(zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], \
-#                    rho[1], iAngle, 'PdPd'))
-#            alpha = np.degrees(np.arcsin( (vp[1]/vp[0]) * np.sin(np.radians(iAngle))))
-#            beta = alpha + wedgeAngle
-#            delta = beta + wedgeAngle
-#            if delta >=90 :
-#                raise ValueError("Ray won't reach surface")
-#            transmref = transm * np.real(zoeppritz_element(vp[1], vs[1], rho[1], \
-#                    vp[0], vs[0], rho[0], beta, 'PdPu'))
-#            final = transmref * np.real(zoeppritz_element(vp[1], vs[1], rho[1], \
-#                    vp[0], vs[0], rho[0], delta, 'PdPd'))
-#            self._rserie[ix] += final 
+    def add_wedge_reflection(self, vp, vs, rho, iAngle, ix, reflector, wedgeAngle=0):
+        from bruges.reflection import zoeppritz_element
+        if reflector is 'top':
+            self._rserie[ix] += np.real(zoeppritz_element(vp[0], vs[0], rho[0], \
+                    vp[1], vs[1], rho[1], iAngle, 'PdPu'))
+        elif reflector is 'base':
+            transm = np.real(zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], \
+                    rho[1], iAngle, 'PdPd'))
+            alpha = np.degrees(np.arcsin( (vp[1]/vp[0]) * np.sin(np.radians(iAngle))))
+            beta = alpha + wedgeAngle
+            delta = beta + wedgeAngle
+            if delta >=90:
+                raise ValueError("Ray won't reach surface")
+            transmref = transm * np.real(zoeppritz_element(vp[1], vs[1], rho[1], \
+                    vp[0], vs[0], rho[0], beta, 'PdPu'))
+            final = transmref * np.real(zoeppritz_element(vp[1], vs[1], rho[1], \
+                    vp[0], vs[0], rho[0], delta, 'PdPd'))
+            self._rserie[ix] += final 
 
     def __iadd__(self, other):
         try:
@@ -541,7 +541,7 @@ class Seismic(object):
         fig = plt.figure(figsize=(8, 6))
         gs = gridspec.GridSpec(1, 1)
         ax1 = plt.subplot(gs[0,0])
-        f = ax1.imshow(self._SEIS[z-1].T, aspect='auto')
+        f = ax1.imshow(self._SEIS[z].T, aspect='auto')
         ax1.set_title(xTitle)
         ax1.set_ylabel(yLabel)
         ax1.set_ylim([ymax, ymin])
