@@ -1,56 +1,79 @@
 import numpy as np
 
-def alpha_tr(angle_in, V1, V2):
+def Xmin(angmax, topDepth):
+    return -np.tan(angmax) * topDepth
+
+def Xmax(angmax, topDepth, gamma, dhmax):
+    return topDepth * np.tan(angmax) + dhmax / np.tan(gamma) 
+
+def XonWedge(angle_in, topDepth, Xsrc):
+    xw = Xsrc + topDepth * np.tan(angle_in)
+    if xw >= -0.1:
+        return xw
+    else:
+        print(xw)
+        raise ValueError('Something went wrong on XonWedge')
+        return -1
+
+def DHinit(XonW, gamma):
+    return XonW * np.tan(gamma)
+
+def AlphaTr(angle_in, V1, V2):
     return np.arcsin(np.sin(angle_in) * V2 / V1)
 
-def wedge_offset(angle_in, topDepth, dh, V1, V2):
-    pass
+def BetaBase(angle_in, gamma, V1, V2):
+    return AlphaTr(angle_in, V1, V2) + gamma
 
-def theta_equivalent(angle_in, topDepth, dh, V1, V2):
-    return np.arctan(0.5 * wedge_offset() / topDepth)
+def PsiTr(angle_in, gamma, V1, V2):
+    return np.arcsin(np.sin(DeltaUp) * V1/V2)
 
-def P1(angle_in, X):
-    xt = topDepth * np.tan(angle_in)
-    print(xt.size)
-    alo = topDepth / np.cos(angles_in)
-    if (X < 0) and (xt.any() < np.abs(X)):
-        for i in range(xt.shape[0]):
-            if xt[i] < np.abs(X):
-                alo[i] = np.nan
-    return alo
-def P2(angle_in, gamma, velocities, X):
-    return ( (topDepth * np.tan(angle_in) + X) * np.sin(gamma) \
-            / np.cos(beta(angle_in, gamma, velocities)) )
-def P3(angle_in, gamma, velocities, X):
-     return np.cos(alpha(angle_in, velocities)) * \
-            P2(angle_in, gamma, velocities, X)\
-            / np.cos(2 * gamma + alpha(angle_in, velocities))
-def P4(angle_in, gamma, velocities):
-    return topDepth / np.cos(psi(angle_in, gamma, velocities))
-def totaLowerPath(angle_in, gamma, velocities, X):
-    return P1(angle_in, X) + P2(angle_in, gamma, velocities, X) + \
-            P3(angle_in, gamma, velocities, X) + P4(angle_in, gamma, velocities)
-def totaLowerTime(angle_in, gamma, velocities, X):
-    return ( (P1(angle_in, X) + P4(angle_in, gamma, velocities)) / Vup + \
-            (P2(angle_in, gamma, velocities, X) + \
-            P3(angle_in, gamma, velocities, X)) / Vmid)
-def alpha(angle_in, velocities):
-    return np.arcsin( np.sin(angle_in) * velocities[1]/velocities[0] )
-def beta(angle_in, gamma, velocities):
-    return alpha(angle_in, velocities) + gamma
-def psi(angle_in, gamma, velocities):
-    return np.arcsin(np.sin(2 * beta(angle_in, gamma, velocities) - \
-            alpha(angle_in, velocities)) * velocities[0]/velocities[1])
-def fullOffset(angle_in, gamma, velocities):
-    alo = P1(angle_in, X) * np.sin(angle_in) + P3(angle_in, gamma, velocities, X) \
-            * np.sin(2*beta(angle_in, gamma, velocities)) \
-            / np.cos(alpha(angle_in, velocities)) + \
-            np.tan(psi(angle_in, gamma, velocities)) * topDepth
-    return alo
-def theta(angle_in, gamma, velocities, topDepth):
-    return np.arctan((0.5 * fullOffset(angle_in, gamma, velocities)) / topDepth)
+def DeltaUp(angle_in, gamma, V1, V2):
+    return 2 * BetaBase(angle_in, gamma, V1, V2) - AlphaTr(angle_in, V1, V2)
 
-def wedge_shotgather(wedgeSlope, maxAng, step, topDepth, velocities, X=0):
+def P1(angle_in, topDepth):
+    return topDepth / np.cos(angles_in)
+
+def P2(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    return ( np.cos(gamma) * DHinit(XonWedge(angle_in, topDepth, Xsrc), gamma) / \
+            np.cos(BetaBase(angle_in, V1, V2, gamma)) )
+
+def XbaseWedge(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    xb = XonWedge(angle_in, topDepth, Xsrc) + np.sin(AlphaTr(angle_in, V1, V2)) * \
+            P2(angle_in, gamma, topDepth, Xsrc, V1, V2)
+    if xb < -0.1:
+        raise ValueError('Something went wrong on XbaseWedge')
+        return -1
+    else:
+        return xb
+
+def DHbaseWedge(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    return XbaseWedge(angle_in, topDepth, gamma, Xsrc, V1, V2) * np.tan(gamma)
+
+def P3(angle_in, topDepth, gamma, Xsrc, V1, V2):
+     return np.cos(AlphaTr(angle_in, V1, V2)) * P2(angle_in, gamma, topDepth, Xsrc, V1, V2) \
+            / np.cos(2 * gamma + AlphaTr(angle_in, V1, V2))
+
+def P4(angle_in, topDepth, gamma, V1, V2):
+    return topDepth / np.cos(PsiTr(angle_in, gamma, V1, V2))
+
+def fullOffset(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    return P1(angle_in, topDepth) * np.sin(angle_in) + P3(angle_in, topDepth, gamma, V1, V2, Xsrc)\
+            * np.sin(2 * BetaBase(angle_in, gamma, V1, V2)) / np.cos(AlphaTr(angle_in, V1, V2)) + \
+            np.tan(PsiTr(angle_in, gamma, V1, V2)) * topDepth
+
+def ThetaEquiv(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    return np.arctan(0.5 *  fullOffset(angle_in, topDepth, gamma, Xsrc, V1, V2)) / topDepth
+
+def totaLowerPath(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    return P1(angle_in, topDepth) + P2(angle_in, gamma, topDepth, Xsrc, V1, V2) + \
+            P3(angle_in, topDepth, gamma, V1, V2, Xsrc) + P4(angle_in, topDepth, gamma, V1, V2)
+
+def totaLowerTime(angle_in, topDepth, gamma, Xsrc, V1, V2):
+    return ( (P1(angle_in, topDepth) + P4(angle_in, topDepth, gamma, V1, V2)) / V1 + \
+            (P2(angle_in, gamma, topDepth, Xsrc, V1, V2) + \
+            P3(angle_in, topDepth, gamma, V1, V2, Xsrc)) / V2)
+
+def wedge_shotgather(wedgeSlope, maxAng, step, dhmin, dhmax, dhstep, topDepth, velocities):
     import warnings
     warnings.filterwarnings("error")
     
@@ -60,32 +83,32 @@ def wedge_shotgather(wedgeSlope, maxAng, step, topDepth, velocities, X=0):
     except:
         radmax_downwards = np.radians(maxAng)
     try:
-        radmax_upwards = min(np.arcsin(v2/v1), alpha_tr(radmax_downwards, v1, v2))
+        radmax_upwards = min(np.arcsin(v2/v1), AlphaTr(radmax_downwards, v1, v2))
     except:
-        radmax_upwards = alpha_tr(radmax_downwards, v1, v2)
+        radmax_upwards = AlphaTr(radmax_downwards, v1, v2)
     
     Angles_in = np.zeros(0, dtype='float')
     Angles_top = np.zeros(0, dtype='float')
     Angles_base = np.zeros(0, dtype='float')
     i = 0
+    srcMin = Xmin(radmax_downwards, topDepth)
+    srcMax = Xmax(radmax_downwards, dhmax, topDepth, gamma)
+
     while True:
         rad_in = np.radians(i * step)
+        alpha = AlphaTr(rad_in, v1, v2)
+        delta = DeltaUp(angle_in, gamma, v1, v2)
+        theta = ThetaEquiv(rad_in, topDepth, v1, v2)
+        beta = BetaBase(angle_in, gamma, v1, v2)
         
-        alpha = alpha_tr(rad_in, v1, v2)
-        theta = theta_equivalent(rad_in, topDepth, dh, v1, v2)
         Angles_in = np.append(Angles_in, rad_in)
-
-        Angles_base = np.append(Angles_base, beta(rad_in, gamma, [v1, v2]))
+        Angles_base = np.append(Angles_base, beta)
+        Angles_top = np.append(Angles_top, theta)
         
-        Angles_top = np.append(Angles_top, theta(rad_in, gamma, [v1, v2], topDepth))
-        if critical:
-            if ((theta >= radmax_downwards) or (alpha >= radmax_upwards)):
-                break
-        else:    
-            if theta >= np.radians(maxAng):
-                break
+        if ((theta >= radmax_downwards) or (DeltaUp >= radmax_upwards)):
+            break
         
-        if (np.degrees(theta(, gamma, [Vup, Vmid], topDepth )) <= maXd) and\
+        if (np.degrees(theta(s, gamma, [Vup, Vmid], topDepth )) <= maXd) and\
                 (np.degrees(psi(np.radians(i*step), gamma, [Vup, Vmid])) <= maXu):
                     break
         i += 1
@@ -99,5 +122,4 @@ def wedge_shotgather(wedgeSlope, maxAng, step, topDepth, velocities, X=0):
 
     return angles_upper, angles_lower, rayPath_upper_reflection, \
             rayPath_lower_reflection, upperTime, lowerTime, dhupper, dhlower
-
 

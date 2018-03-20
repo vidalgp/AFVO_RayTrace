@@ -13,7 +13,6 @@ __author__ = "Vidal Gonzalez P"
 __email__ = "vidalgonz8@gmail.com"
 __status__ = "En Desarrollo"
 
-import sys
 import numpy as np
 
 def alpha_tr(angle_in, V1, V2):
