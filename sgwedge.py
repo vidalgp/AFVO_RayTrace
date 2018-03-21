@@ -15,7 +15,7 @@ def XonWedge(angle_in, topDepth, Xsrc):
         raise ValueError('Something went wrong on XonWedge')
         return -1
 
-def DHinit(XonW, gamma):
+def DHtop(XonW, gamma):
     return XonW * np.tan(gamma)
 
 def AlphaTr(angle_in, V1, V2):
@@ -34,7 +34,7 @@ def P1(angle_in, topDepth):
     return topDepth / np.cos(angles_in)
 
 def P2(angle_in, topDepth, gamma, Xsrc, V1, V2):
-    return ( np.cos(gamma) * DHinit(XonWedge(angle_in, topDepth, Xsrc), gamma) / \
+    return ( np.cos(gamma) * DHtop(XonWedge(angle_in, topDepth, Xsrc), gamma) / \
             np.cos(BetaBase(angle_in, V1, V2, gamma)) )
 
 def XbaseWedge(angle_in, topDepth, gamma, Xsrc, V1, V2):
@@ -73,53 +73,53 @@ def totaLowerTime(angle_in, topDepth, gamma, Xsrc, V1, V2):
             (P2(angle_in, gamma, topDepth, Xsrc, V1, V2) + \
             P3(angle_in, topDepth, gamma, V1, V2, Xsrc)) / V2)
 
-def wedge_shotgather(wedgeSlope, maxAng, step, dhmin, dhmax, dhstep, topDepth, velocities):
+def wedge_shotgather(wedgeSlope, maxAng, angstep, dhmax, dhstep, topDepth, velocities):
     import warnings
     warnings.filterwarnings("error")
     
     v1, v2 = velocities[0], velocities[1] #m/s
+    gamma = np.radians(gamma)
+    angstep = np.radians(angstep)
     try:
         radmax_downwards = min(np.arcsin(v1/v2), np.radians(maxAng))
     except:
         radmax_downwards = np.radians(maxAng)
     try:
-        radmax_upwards = min(np.arcsin(v2/v1), AlphaTr(radmax_downwards, v1, v2))
+        radmax_upwards = min(np.arcsin(v2/v1), DeltaUp(radmax_downwards, gamma, v1, v2))
     except:
-        radmax_upwards = AlphaTr(radmax_downwards, v1, v2)
+        radmax_upwards = DeltaUp(radmax_downwards, gamma, v1, v2)
     
     Angles_in = np.zeros(0, dtype='float')
     Angles_top = np.zeros(0, dtype='float')
     Angles_base = np.zeros(0, dtype='float')
-    i = 0
     srcMin = Xmin(radmax_downwards, topDepth)
     srcMax = Xmax(radmax_downwards, dhmax, topDepth, gamma)
+    XsrcStep = int(topDepth * np.tan(angstep))
+    XsrcVector = np.arange(srcMin, srcMax + XsrcStep, XsrcStep)
+    for x in XsrcVector:
+        rad_in = -np.arctan(x / topDepth) #deg min
+        while True:
+            alpha = AlphaTr(rad_in, v1, v2)
+            beta = BetaBase(rad_in, gamma, v1, v2)
+            delta = DeltaUp(rad_in, gamma, v1, v2)
+            theta = ThetaEquiv(rad_in, topDepth, x, v1, v2)
+            
+            Angles_in = np.append(Angles_in, rad_in)
+            Angles_base = np.append(Angles_base, beta)
+            Angles_top = np.append(Angles_top, theta)
+            
+            if ((theta >= radmax_downwards) or (DeltaUp >= radmax_upwards)):
+                break
+            rad_in += angstep
 
-    while True:
-        rad_in = np.radians(i * step)
-        alpha = AlphaTr(rad_in, v1, v2)
-        delta = DeltaUp(angle_in, gamma, v1, v2)
-        theta = ThetaEquiv(rad_in, topDepth, v1, v2)
-        beta = BetaBase(angle_in, gamma, v1, v2)
-        
-        Angles_in = np.append(Angles_in, rad_in)
-        Angles_base = np.append(Angles_base, beta)
-        Angles_top = np.append(Angles_top, theta)
-        
-        if ((theta >= radmax_downwards) or (DeltaUp >= radmax_upwards)):
-            break
-        
-        if (np.degrees(theta(s, gamma, [Vup, Vmid], topDepth )) <= maXd) and\
-                (np.degrees(psi(np.radians(i*step), gamma, [Vup, Vmid])) <= maXu):
-                    break
-        i += 1
-
-    rayPath_upper_reflection =  2 * topDepth / np.cos(angles_upper)
-    rayPath_lower_reflection = totaLowerPath(angles_in, gamma, velocities, X)
-    upperTime = 1e3 * rayPath_upper_reflection / Vup
-    lowerTime = 1e3 * totaLowerTime(angles_in, gamma, velocities, X)
+    RayPath_top =  2 * topDepth / np.cos(Angles_top)
+    RayPath_base1 =  P1(Angles_in, topDepth) + P4(Angles_in, topDepth, gamma, v1, v2)
+    RayPath_base2 = P2(Angles_in, topDepth, gamma, XsrcVector, v1, v2) + \
+            P3(Angles_in, topDepth, gamma, XsrcVector, v1, v2)
+    RayPath_base = RayPath_base1 + RayPath_base2
+    TopTime = RayPath_top / v1
+    BaseTime = ((RayPath_base1 / v1) + (RayPath_base2 / v2))
     dhupper = -999
     dhlower = -999
-
-    return angles_upper, angles_lower, rayPath_upper_reflection, \
-            rayPath_lower_reflection, upperTime, lowerTime, dhupper, dhlower
+    return Angles_top, Angles_base, RayPath_top, RayPath_base, TopTime, BaseTime
 
