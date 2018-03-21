@@ -84,7 +84,6 @@ def simple_array_maker(model, dhmin, dhmax, dhstep, angMax, angStep, topDepth):
     dhVec = np.arange(dhmin, dhmax+dhstep, dhstep)
     print("Vector DH:")
     print(dhVec)
-    angVec = np.arange(0, angMax, angStep)
     for i in range(dhVec.shape[0]):
         th, be, ru, rl, tt, tb = cmp_gather_simple(dhVec[i], angMax, angStep, \
                 topDepth, model.vp)
