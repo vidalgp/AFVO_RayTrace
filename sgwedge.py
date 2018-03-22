@@ -9,14 +9,11 @@ def Xmax(angmax, topDepth, gamma, dhmax):
 
 def XonWedge(angle_in, topDepth, Xsrc):
     xw = Xsrc + topDepth * np.tan(angle_in)
-    if xw >= -0.1 and xw < 0:
-        return 0.0
-    elif xw >= 0:
-        return xw
-    else:
-        print(xw, np.degrees(angle_in), Xsrc, topDepth)
+    if xw.any() < -0.1:
         raise ValueError('Something went wrong on XonWedge')
         return -1
+    else:
+        return xw
 
 def DHtop(angle_in, topDepth, gamma, Xsrc):
     return XonWedge(angle_in, topDepth, Xsrc) * np.tan(gamma)
@@ -42,20 +39,18 @@ def P2(angle_in, topDepth, gamma, Xsrc, V1, V2):
 
 def XbaseWedge(angle_in, topDepth, gamma, Xsrc, V1, V2):
     xb = XonWedge(angle_in, topDepth, Xsrc) + np.sin(AlphaTr(angle_in, V1, V2)) * \
-            P2(angle_in, gamma, topDepth, Xsrc, V1, V2)
-    if xb >= -0.1 and xb < 0:
-        return 0.0
-    elif xb >= 0:
-        return xb
-    else:
+            P2(angle_in, topDepth, gamma, Xsrc, V1, V2)
+    if xb.any() < -0.1:
         raise ValueError('Something went wrong on XbaseWedge')
         return -1
+    else:
+        return xb
 
 def DHbase(angle_in, topDepth, gamma, Xsrc, V1, V2):
     return XbaseWedge(angle_in, topDepth, gamma, Xsrc, V1, V2) * np.tan(gamma)
 
 def P3(angle_in, topDepth, gamma, Xsrc, V1, V2):
-     return np.cos(AlphaTr(angle_in, V1, V2)) * P2(angle_in, topDepth, gamma, Xsrc, V1, V2) \
+    return np.cos(AlphaTr(angle_in, V1, V2)) * P2(angle_in, topDepth, gamma, Xsrc, V1, V2) \
             / np.cos(2 * gamma + AlphaTr(angle_in, V1, V2))
 
 def P4(angle_in, topDepth, gamma, V1, V2):
@@ -90,7 +85,7 @@ def wedge_shotgather(gamma, radmax_downwards, radmax_upwards, angstep, topDepth,
             break
         rad_in += angstep
 
-    print(Angles_in, Angles_top, Angles_base)
+    print(np.degrees(Angles_in), np.degrees(Angles_top), np.degrees(Angles_base), X)
 
     RayPath_top =  2 * topDepth / np.cos(Angles_top)
     RayPath_base1 =  P1(Angles_in, topDepth) + P4(Angles_in, topDepth, gamma, v1, v2)
@@ -106,7 +101,7 @@ def wedge_shotgather(gamma, radmax_downwards, radmax_upwards, angstep, topDepth,
     return Angles_top, Angles_base, RayPath_top, RayPath_base, TopTime, BaseTime, TopDH, BaseDH, \
             CDPtop, CDPbase
 
-def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=1000):
+def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
     import warnings
     warnings.filterwarnings("error")
     velocities = model.vp 
@@ -128,47 +123,56 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=1000):
     XsrcStep = XsrcVector[-1] - XsrcVector[-2]
     angStep = np.arctan(XsrcStep / topDepth)
     print(np.degrees(angStep))
-    #print('Xsrc Vector:')
-    #print(XsrcVector)
-    th, be, ru, rl, tt, tb, dhu, dhl, cdpu, cdpl = wedge_shotgather(gamma, radmax_downwards, \
-            radmax_upwards, angStep, topDepth, velocities, XsrcVector[0])
-    sizeX = th.shape[0]
-    TH = th
-    BE = be
-    RU = ru
-    RL = rl
-    TT = tt
-    TB = tb
-    DHU = dhu
-    DHL = dhl
-    CDPU = cdpu
-    CDPL = cdpl
-    X = XsrcVector[0] * np.ones(th.shape[0], dtype='float')
-    for i in range(1, XsrcVector.size):
+    sizeX = nsrc 
+    for i in range(XsrcVector.size):
         th, be, ru, rl, tt, tb, dhu, dhl, cdpu, cdpl = wedge_shotgather(gamma, radmax_downwards, \
                 radmax_upwards, angStep, topDepth, velocities, XsrcVector[i])
-        aux = np.zeros(sizeX, dtype='float')
-        aux[:th.shape[0]] = th
-        TH = np.vstack([TH, aux])
-        aux[:be.shape[0]] = be
-        BE = np.vstack([BE, aux])
-        aux[:ru.shape[0]] = ru
-        RU = np.vstack([RU, aux])
-        aux[:rl.shape[0]] = rl
-        RL = np.vstack([RL, aux])
-        aux[:tt.shape[0]] = tt
-        TT = np.vstack([TT, aux])
-        aux[:tb.shape[0]] = tb
-        TB = np.vstack([TB, aux])
-        aux[:dhu.shape[0]] = dhu
-        DHU = np.vstack([DHU, aux])
-        aux[:dhl.shape[0]] = dhl
-        DHL = np.vstack([DHL, aux])
-        aux[:cdpu.shape[0]] = cdpu
-        CDPU = np.vstack([CDPU, aux])
-        aux[:cdpl.shape[0]] = cdpl
-        CDPL = np.vstack([CDPL, aux])
-        aux[:th.shape[0]] = XsrcVector[i] * np.ones(th.shape[0], dtype='float')
-        X = np.vstack([X, aux])
-        del(aux)
+        if i == 0:
+            TH = np.zeros(sizeX, dtype='float')
+            TH[:th.size] = th
+            BE = np.zeros(sizeX, dtype='float')
+            BE[:be.size] = be
+            RU = np.zeros(sizeX, dtype='float')
+            RU[:ru.size] = ru
+            RL = np.zeros(sizeX, dtype='float')
+            RL[:rl.size] = rl
+            TT = np.zeros(sizeX, dtype='float')
+            TT[:tt.size] = tt
+            TB = np.zeros(sizeX, dtype='float')
+            TB[:tb.size] = tb
+            DHU = np.zeros(sizeX, dtype='float')
+            DHU[:dhu.size] = dhu
+            DHL = np.zeros(sizeX, dtype='float')
+            DHL[:dhl.size] = dhl
+            CDPU = np.zeros(sizeX, dtype='float')
+            CDPU[:cdpu.size] = cdpu
+            CDPL = np.zeros(sizeX, dtype='float')
+            CDPL[:cdpl.size] = cdpl
+            X = np.zeros(sizeX, dtype='float')
+            X[:cdpl.size] = XsrcVector[i] * np.ones(cdpl.size, dtype='float')
+        else:
+            aux = np.zeros(sizeX, dtype='float')
+            aux[:th.size] = th
+            TH = np.vstack([TH, aux])
+            aux[:be.size] = be
+            BE = np.vstack([BE, aux])
+            aux[:ru.size] = ru
+            RU = np.vstack([RU, aux])
+            aux[:rl.size] = rl
+            RL = np.vstack([RL, aux])
+            aux[:tt.size] = tt
+            TT = np.vstack([TT, aux])
+            aux[:tb.size] = tb
+            TB = np.vstack([TB, aux])
+            aux[:dhu.size] = dhu
+            DHU = np.vstack([DHU, aux])
+            aux[:dhl.size] = dhl
+            DHL = np.vstack([DHL, aux])
+            aux[:cdpu.size] = cdpu
+            CDPU = np.vstack([CDPU, aux])
+            aux[:cdpl.size] = cdpl
+            CDPL = np.vstack([CDPL, aux])
+            aux[:th.size] = XsrcVector[i] * np.ones(th.size, dtype='float')
+            X = np.vstack([X, aux])
+            del(aux)
     return TH, BE, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X 
