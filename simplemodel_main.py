@@ -15,16 +15,16 @@ def main():
     dt = 0.0001 #ms
     topdepth = 2005
     angmax = 40
-    angstep = 2
-    dhmin = 100
-    dhmax = 101
-    dhstep = 1 
+    angstep = 1
+    dhmin = 1
+    dhmax = 51
+    dhstep = 1
     global TH, B, RU, RL, TT, TB, DH
     TH, B, RU, RL, TT, TB, DH= simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
 
     dimX = TH.shape[1]
-    dimY = int(TB[-1].max()/dt * (1.50))
+    dimY = int(TB[TB!=0].max()/dt * (1.05))
     dimZ = TH.shape[0]
 
     global seismik, ymin, ymax
@@ -39,7 +39,7 @@ def main():
     Bmax = TB + 0.1
     
     print('\nStarting AFVO single computations\n')
-    for dh in range(0, seismik.zLen, 1):
+    for dh in range(0, seismik.zLen, 5):
         print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
         plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
                 Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
@@ -58,7 +58,7 @@ def main():
     tb = TB.reshape(totalTraces)
     theta = np.degrees(TH.reshape(totalTraces))
     dh = DH.reshape(totalTraces) 
-    
+  
     print('\nStarting AFVO map computations: Top reflector')
     tminT = tt - 0.1
     tmaxT = 0.5 * (tt + tb)

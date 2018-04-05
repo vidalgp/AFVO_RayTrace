@@ -85,7 +85,7 @@ def wedge_shotgather(gamma, radmax_downwards, radmax_upwards, angstep, topDepth,
             break
         rad_in += angstep
 
-    print(np.degrees(Angles_in), np.degrees(Angles_top), np.degrees(Angles_base), X)
+    #print(np.degrees(Angles_in), np.degrees(Angles_top), np.degrees(Angles_base), X)
 
     RayPath_top =  2 * topDepth / np.cos(Angles_top)
     RayPath_base1 =  P1(Angles_in, topDepth) + P4(Angles_in, topDepth, gamma, v1, v2)
