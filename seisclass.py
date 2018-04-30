@@ -49,7 +49,7 @@ class Model(object):
             self._vs = [1075.0, 1385.0, 1170.0]
             self._rho= [2200.0, 2300.0, 2170.0]
             self._poisson = poisson(np.asarray(self._vp), np.asarray(self._vs))
-        elif m is 'mazzottiB' or m is 'b':
+        elif m is 'mazzottiB' or m is 'm':
             self._vp = [2260.0, 2000.0, 2345.0]
             self._vs = [1075.0, 1330.0, 1170.0]
             self._rho= [2200.0, 2300.0, 2170.0]
