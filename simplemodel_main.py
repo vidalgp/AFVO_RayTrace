@@ -18,7 +18,7 @@ def main():
     angstep = 1
     dhmin = 1
     dhmax = 51
-    dhstep = 10
+    dhstep = 1
     global TH, B, RU, RL, TT, TB, DH, sps
     TH,B,RU,RL,TT,TB,DH, sps = simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
@@ -34,8 +34,8 @@ def main():
     create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
     
     global Tmin, Tmax, Bmin, Bmax
-    Tmin = TT
-    Tmin[Tmin>=0.1] -= 0.1
+    Tmin = TT-0.1
+    Tmin[Tmin<0] = 0.0
     Tmax = 0.5 * (TT + TB)
     Bmin = Tmax
 
