@@ -7,8 +7,12 @@ import seaborn as sns
 
 def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, name=''):
     sns.set()
+    np.savetxt('angle.txt', angles)
+
     topRi = AVO(gather, tmin1, tmax1, dt)
     topFi = FVO(gather, tmin1, tmax1, dt)
+    
+    np.savetxt('topRi.txt', topRi)
 
     baseRi = AVO(gather, tmin2, tmax2, dt)
     baseFi = FVO(gather, tmin2, tmax2, dt)

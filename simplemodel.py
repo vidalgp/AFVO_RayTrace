@@ -73,7 +73,7 @@ def digitize_top_base(Rs, model, dt, iAngle, t, interf):
     vp = model.vp[:-1]
     vs = model.vs[:-1]
     rho = model.rho[:-1]
-    if (not np.isnan(t) or t):
+    if (t>0):
         t_ix = int(t / dt)
         Rs.add_layer_reflection(vp, vs, rho, iAngle, t_ix, interf)
     else:
@@ -88,7 +88,7 @@ def simple_array_maker(model, dhmin, dhmax, dhstep, angMax, angStep, topDepth):
         th, be, ru, rl, tt, tb = cmp_gather_simple(dhVec[i], angMax, angStep, \
                 topDepth, model.vp)
         if i == 0:
-            sizeX = th.shape[0]
+            sizeX = th.size
             TH = th
             BE = be
             RU = ru
@@ -97,22 +97,40 @@ def simple_array_maker(model, dhmin, dhmax, dhstep, angMax, angStep, topDepth):
             TB = tb
             DH = dhVec[i] * np.ones(th.shape[0], dtype='float')
         else:
-            aux = np.zeros(sizeX, dtype='float')
+            aux = th[-1] * np.ones(sizeX, dtype='float')
             aux[:th.shape[0]] = th
             TH = np.vstack([TH, aux])
+            del(aux)
+            
+            aux = be[-1] * np.ones(sizeX, dtype='float')
             aux[:be.shape[0]] = be
             BE = np.vstack([BE, aux])
+            del(aux)
+            
+            aux = ru[-1] * np.ones(sizeX, dtype='float')
             aux[:ru.shape[0]] = ru
             RU = np.vstack([RU, aux])
+            del(aux)
+            
+            aux = rl[-1] * np.ones(sizeX, dtype='float')
             aux[:rl.shape[0]] = rl
             RL = np.vstack([RL, aux])
+            del(aux)
+            
+            aux = tt[-1] * np.ones(sizeX, dtype='float')
             aux[:tt.shape[0]] = tt
             TT = np.vstack([TT, aux])
+            del(aux)
+            
+            aux = tb[-1] * np.ones(sizeX, dtype='float')
             aux[:tb.shape[0]] = tb
             TB = np.vstack([TB, aux])
-            aux[:th.shape[0]] = dhVec[i] * np.ones(th.shape[0], dtype='float')
+            del(aux)
+            
+            aux = dhVec[i] * np.ones(sizeX, dtype='float')
             DH = np.vstack([DH, aux])
             del(aux)
+
     return TH, BE, RU, RL, TT, TB, DH
 
 ###################################################################################

@@ -18,9 +18,9 @@ def main():
     angstep = 1
     dhmin = 1
     dhmax = 51
-    dhstep = 1
+    dhstep = 10
     global TH, B, RU, RL, TT, TB, DH
-    TH, B, RU, RL, TT, TB, DH= simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
+    TH,B,RU,RL,TT,TB,DH = simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
 
     dimX = TH.shape[1]
@@ -32,20 +32,24 @@ def main():
     ymin = TT[0].min()* 0.95
     seismik = Seismic(dt, dimX, dimY, dimZ)
     create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
-        
-    Tmin = TT - 0.1
+    
+    global Tmin, Tmax, Bmin, Bmax
+    Tmin = TT
+    Tmin[Tmin>=0.1] -= 0.1
     Tmax = 0.5 * (TT + TB)
     Bmin = Tmax
-    Bmax = TB + 0.1
+
+    Bmax = TB
+    Bmax[Bmax>0] += 0.1
     
-    print('\nStarting AFVO single computations\n')
-    for dh in range(0, seismik.zLen, 5):
-        print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
-        plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-                Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
-        seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-        plt.close('all') 
-    
+   # print('\nStarting AFVO single computations\n')
+   # for dh in range(0, seismik.zLen, 5):
+   #     print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
+   #     plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
+   #             Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
+   #     seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
+   #     plt.close('all') 
+   # 
     dh = seismik.zLen - 1
     seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
     plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
