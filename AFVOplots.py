@@ -5,23 +5,22 @@ from scipy.interpolate import CubicSpline
 from utils import*
 import seaborn as sns
 
-def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, name=''):
+def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, sps=0, name=''):
     sns.set()
-    np.savetxt('angle.txt', angles)
+    if not sps:
+        sps = angles.size
 
     topRi = AVO(gather, tmin1, tmax1, dt)
     topFi = FVO(gather, tmin1, tmax1, dt)
     
-    np.savetxt('topRi.txt', topRi)
-
     baseRi = AVO(gather, tmin2, tmax2, dt)
     baseFi = FVO(gather, tmin2, tmax2, dt)
     
-    ftopRi = CubicSpline(angles, topRi)
-    ftopFi = CubicSpline(angles, topFi)
+    ftopRi = CubicSpline(angles[:sps], topRi[:sps])
+    ftopFi = CubicSpline(angles[:sps], topFi[:sps])
     
-    fbaseRi = CubicSpline(angles, baseRi)
-    fbaseFi = CubicSpline(angles, baseFi)
+    fbaseRi = CubicSpline(angles[:sps], baseRi[:sps])
+    fbaseFi = CubicSpline(angles[:sps], baseFi[:sps])
 
     angles_new = np.linspace(angles.min(), angles.max(), 100, endpoint=True)
 

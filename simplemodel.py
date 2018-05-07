@@ -84,9 +84,11 @@ def simple_array_maker(model, dhmin, dhmax, dhstep, angMax, angStep, topDepth):
     dhVec = np.arange(dhmin, dhmax+dhstep, dhstep)
     print("Vector DH:")
     print(dhVec)
-    for i in range(dhVec.shape[0]):
+    spanSize = np.zeros(dhVec.size, dtype='int')
+    for i in range(dhVec.size):
         th, be, ru, rl, tt, tb = cmp_gather_simple(dhVec[i], angMax, angStep, \
                 topDepth, model.vp)
+        spanSize[i] = th.size
         if i == 0:
             sizeX = th.size
             TH = th
@@ -131,7 +133,7 @@ def simple_array_maker(model, dhmin, dhmax, dhstep, angMax, angStep, topDepth):
             DH = np.vstack([DH, aux])
             del(aux)
 
-    return TH, BE, RU, RL, TT, TB, DH
+    return TH, BE, RU, RL, TT, TB, DH, spanSize
 
 ###################################################################################
 def main():

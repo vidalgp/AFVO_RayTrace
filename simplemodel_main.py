@@ -19,8 +19,8 @@ def main():
     dhmin = 1
     dhmax = 51
     dhstep = 10
-    global TH, B, RU, RL, TT, TB, DH
-    TH,B,RU,RL,TT,TB,DH = simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
+    global TH, B, RU, RL, TT, TB, DH, sps
+    TH,B,RU,RL,TT,TB,DH, sps = simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
 
     dimX = TH.shape[1]
@@ -42,19 +42,19 @@ def main():
     Bmax = TB
     Bmax[Bmax>0] += 0.1
     
-   # print('\nStarting AFVO single computations\n')
-   # for dh in range(0, seismik.zLen, 5):
-   #     print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
-   #     plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
-   #             Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
-   #     seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-   #     plt.close('all') 
-   # 
-    dh = seismik.zLen - 1
-    seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
-    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-            Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
+    print('\nStarting AFVO single computations\n')
+    for dh in range(0, seismik.zLen, 5):
+        print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
+        plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
+                Bmax[dh], seismik.dt, sps[dh],('TopBase_{}').format(dh * dhstep + dhmin))
+        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh)
+        plt.close('all') 
     
+    dh = seismik.zLen - 1
+    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh)
+    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
+            Bmax[dh], seismik.dt,sps[dh],('TopBase_{}').format(dh*dhstep))
+
     global fullArray, tminT, tmaxT
     totalTraces = seismik.zLen * seismik.xTraces
     fullArray = np.zeros([totalTraces, 4], dtype='float') 
