@@ -72,7 +72,7 @@ def wedge_shotgather(gamma, radmax_downwards, radmax_upwards, angstep, topDepth,
     Angles_base = np.zeros(0, dtype='float')
     rad_in = -np.arctan(X / topDepth) #ang min
     while True:
-        alpha = AlphaTr(rad_in, v1, v2)
+        #alpha = AlphaTr(rad_in, v1, v2)
         beta = BetaBase(rad_in, gamma, v1, v2)
         delta = DeltaUp(rad_in, gamma, v1, v2)
         theta = ThetaEquiv(rad_in, topDepth, gamma, X, v1, v2)
@@ -84,8 +84,6 @@ def wedge_shotgather(gamma, radmax_downwards, radmax_upwards, angstep, topDepth,
         if ((theta >= radmax_downwards) or (delta >= radmax_upwards)):
             break
         rad_in += angstep
-
-    #print(np.degrees(Angles_in), np.degrees(Angles_top), np.degrees(Angles_base), X)
 
     RayPath_top =  2 * topDepth / np.cos(Angles_top)
     RayPath_base1 =  P1(Angles_in, topDepth) + P4(Angles_in, topDepth, gamma, v1, v2)
@@ -122,7 +120,9 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
     XsrcVector = np.linspace(srcMin, srcMax, nsrc)
     XsrcStep = XsrcVector[-1] - XsrcVector[-2]
     angStep = np.arctan(XsrcStep / topDepth)
+    print(np.degrees(radmax_downwards))
     print(np.degrees(angStep))
+    print(XsrcVector)
     sizeX = nsrc 
     for i in range(XsrcVector.size):
         th, be, ru, rl, tt, tb, dhu, dhl, cdpu, cdpl = wedge_shotgather(gamma, radmax_downwards, \
@@ -176,3 +176,37 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
             X = np.vstack([X, aux])
             del(aux)
     return TH, BE, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X 
+
+
+def CDPgather(srcspacing, cdpMax, maxsize, CDParray, a1,a2,a3,a4,a5,a6,a7,a8):
+    '''
+    all the arrays should be reshaped to 1d
+    '''
+    cdpRanges = np.arange(0.0, cdpMax+2*srcspacing, srcspacing)
+    gatherInfo = np.zeros([9, maxsize])
+    k = 0
+    for i in range(cdpRanges.size-1):
+        locix = np.where((CDParray > cdpRanges[i]) & (CDParray < cdpRanges[i+1])) #1d array w indices
+        for j in locix[0]:
+            print (i, j, k)
+            gatherInfo[0][k] = CDParray[j]
+            gatherInfo[1][k] = a1[j]
+            gatherInfo[2][k] = a2[j]
+            gatherInfo[3][k] = a3[j]
+            gatherInfo[4][k] = a4[j]
+            gatherInfo[5][k] = a5[j]
+            gatherInfo[5][k] = a5[j]
+            gatherInfo[6][k] = a6[j]
+            gatherInfo[7][k] = a7[j]
+            gatherInfo[8][k] = a8[j]
+            k += 1
+    return gatherInfo
+
+
+
+        
+        
+
+
+
+

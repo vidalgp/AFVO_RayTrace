@@ -18,7 +18,7 @@ def main():
     angstep = 1
     dhmin = 1
     dhmax = 51
-    dhstep = 1
+    dhstep = 10
     global TH, B, RU, RL, TT, TB, DH, sps
     TH,B,RU,RL,TT,TB,DH, sps = simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)

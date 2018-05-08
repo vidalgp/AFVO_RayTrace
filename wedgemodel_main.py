@@ -3,41 +3,50 @@ import numpy as np
 #from seisclass import*
 #from AFVOplots import*
 from utils import*
-from sgwedge import wedge_array_maker
+from wedgemodel import wedge_array_maker, CDPgather
 
 def main():
     import time
     start = time.time()
     if len(sys.argv) > 1:
-        mtype, Aq, n = sys.argv[1], sys.argv[2], int(sys.argv[3])
+        mtype, Aq, nsrc = sys.argv[1], sys.argv[2], int(sys.argv[3])
     
     mod = Model(mtype)
-    dt = 0.001 #ms
+    dt = 0.0001 #ms
     topdepth = 2005
     angmax = 20
     angstep = 1
     dhmax = 20
     wedgeSlope = 5
-    nsrces = n
     global TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X
-    TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X = wedge_array_maker(mod, wedgeSlope, dhmax, angmax, topdepth, nsrces)
+    TH,B,RU,RL,TT,TB,DHU, DHL, CDPU, CDPL, X = wedge_array_maker(mod, wedgeSlope, dhmax, angmax, topdepth, nsrc)
 
     dimX = TH.shape[1]
-    dimY = int(TB.max()/dt * (1.50))
+    dimY = int(TB[TB!=0].max()/dt * (1.05))
     dimZ = TH.shape[0]
 
-    global seismik, ymin, ymax
+    global seismik, ymin, ymax, gatherInfoTop
     ymax = dimY*dt
     ymin = TT[TT!=0].min() * 0.95
     seismik = Seismic(dt, dimX, dimY, dimZ)
-    #create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
-    #    
+    
+    srcSpacing = X[-1][0] - X[-2][0]
+    mergedsize = int(TH.shape[0] * TH.shape[1])
+    maxsize = TT[TT>0].size
+
+    gatherInfoTop =CDPgather(srcSpacing,CDPU.max(), maxsize , CDPU.reshape(mergedsize), TH.reshape(mergedsize), \
+            B.reshape(mergedsize), RU.reshape(mergedsize), RL.reshape(mergedsize), TT.reshape(mergedsize), \
+            TB.reshape(mergedsize), DHU.reshape(mergedsize), X.reshape(mergedsize))
+
+
+    create_timeModel(seismik, mod, dt, np.degrees(gatherInfoTop[1]), gatherInfoTop[6], gatherInfoTop[5], Aq)
+        
     #Tmin = TT - 0.1
     #Tmax = 0.5 * (TT + TB)
     #Bmin = Tmax
     #Bmax = TB + 0.1
     #
-    #print('\nStarting AFVO single computations\n')
+    print('\nStarting AFVO single computations\n')
     #for dh in range(0, seismik.zLen, 1):
     #    print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
     #    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \

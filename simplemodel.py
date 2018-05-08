@@ -16,6 +16,7 @@ __status__ = "En Desarrollo"
 import numpy as np
 
 def alpha_tr(angle_in, V1, V2):
+    print(V1, V2, np.degrees(angle_in))
     return np.arcsin(np.sin(angle_in) * V2 / V1)
 
 def simple_offset(angle_in, topDepth, dh, V1, V2):
@@ -24,7 +25,7 @@ def simple_offset(angle_in, topDepth, dh, V1, V2):
 def theta_equivalent(angle_in, topDepth, dh, V1, V2):
     return np.arctan(0.5 * simple_offset(angle_in, topDepth, dh, V1, V2) / topDepth)
 
-def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=False):
+def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=True):
     '''
     shot gather equivalent to cmp gather considering flat paralell reflectors
     critical: consider critical angles in ray tracing 
