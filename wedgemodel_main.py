@@ -1,7 +1,7 @@
 import sys
 import numpy as np
-#from seisclass import*
-#from AFVOplots import*
+from seisclass import*
+from AFVOplots import*
 from utils import*
 from wedgemodel import wedge_array_maker, CDPgather
 
@@ -14,51 +14,50 @@ def main():
     mod = Model(mtype)
     dt = 0.0001 #ms
     topdepth = 2005
-    angmax = 20
+    angmax = 40
     angstep = 1
-    dhmax = 20
+    dhmax = 51
     wedgeSlope = 5
-    global TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X
-    TH,B,RU,RL,TT,TB,DHU, DHL, CDPU, CDPL, X = wedge_array_maker(mod, wedgeSlope, dhmax, angmax, topdepth, nsrc)
+    global TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X, srcSpacing, srcVector 
+    TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X, srcSpacing, srcVector = wedge_array_maker(mod, wedgeSlope, \
+            dhmax, angmax, topdepth, nsrc)
 
-    dimX = TH.shape[1]
-    dimY = int(TB[TB!=0].max()/dt * (1.05))
-    dimZ = TH.shape[0]
+    global gatherInfoTop, cdpVector, dimX, dimY, dimZ
+    gatherInfoTop, cdpVector =CDPgather(srcSpacing, CDPU.max() , CDPU, TH , B , RU , RL , TT , TB , DHU , X )
 
-    global seismik, ymin, ymax, gatherInfoTop
-    ymax = dimY*dt
-    ymin = TT[TT!=0].min() * 0.95
-    seismik = Seismic(dt, dimX, dimY, dimZ)
+    dimX = gatherInfoTop[0].shape[1]
+    dimY = int(gatherInfoTop[1].max()/dt * (1.05))
+    dimZ = gatherInfoTop[0].shape[0]
+
+    #global seismik, ymin, ymax
+    #ymax = dimY*dt
+    #ymin = TT[TT>0].min() * 0.95
+    #seismik = Seismic(dt, dimX, dimY, dimZ)
+
+    #create_timeModel(seismik, mod, dt, np.degrees(gatherInfoTop[1]), gatherInfoTop[6], gatherInfoTop[5], Aq)
     
-    srcSpacing = X[-1][0] - X[-2][0]
-    mergedsize = int(TH.shape[0] * TH.shape[1])
-    maxsize = TT[TT>0].size
-
-    gatherInfoTop =CDPgather(srcSpacing,CDPU.max(), maxsize , CDPU.reshape(mergedsize), TH.reshape(mergedsize), \
-            B.reshape(mergedsize), RU.reshape(mergedsize), RL.reshape(mergedsize), TT.reshape(mergedsize), \
-            TB.reshape(mergedsize), DHU.reshape(mergedsize), X.reshape(mergedsize))
-
-
-    create_timeModel(seismik, mod, dt, np.degrees(gatherInfoTop[1]), gatherInfoTop[6], gatherInfoTop[5], Aq)
-        
-    #Tmin = TT - 0.1
+    #global Tmin, Tmax, Bmin, Bmax
+    #Tmin = TT-0.1
+    #Tmin[Tmin<0] = 0.0
     #Tmax = 0.5 * (TT + TB)
     #Bmin = Tmax
-    #Bmax = TB + 0.1
+
+    #Bmax = TB
+    #Bmax[Bmax>0] += 0.1
     #
-    print('\nStarting AFVO single computations\n')
-    #for dh in range(0, seismik.zLen, 1):
+    #print('\nStarting AFVO single computations\n')
+    #for dh in range(0, seismik.zLen, 5):
     #    print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
-    #    plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-    #            Bmax[dh], seismik.dt, ('TopBase_{}').format(dh * dhstep + dhmin))
-    #    seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
+    #    plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
+    #            Bmax[dh], seismik.dt, sps[dh],('TopBase_{}').format(dh * dhstep + dhmin))
+    #    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh)
     #    plt.close('all') 
     #
     #dh = seismik.zLen - 1
-    #seismik.plot_seismogram(ymin=ymin, ymax=ymax, excursion=3, z=dh)
+    #seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh)
     #plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-    #        Bmax[dh], seismik.dt,('TopBase_{}').format(dh*dhstep))
-    #
+    #        Bmax[dh], seismik.dt,sps[dh],('TopBase_{}').format(dh*dhstep))
+
     #global fullArray, tminT, tmaxT
     #totalTraces = seismik.zLen * seismik.xTraces
     #fullArray = np.zeros([totalTraces, 4], dtype='float') 
@@ -105,9 +104,10 @@ def main():
     #end = time.time()
     #print(("\nElapsed time {}s\n").format(end - start))
 
-    plt.close('all') 
-    return 0
+    #plt.close('all') 
+    #return 0
 
 if (__name__ == '__main__'):
     main()
 
+        

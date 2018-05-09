@@ -72,7 +72,6 @@ def wedge_shotgather(gamma, radmax_downwards, radmax_upwards, angstep, topDepth,
     Angles_base = np.zeros(0, dtype='float')
     rad_in = -np.arctan(X / topDepth) #ang min
     while True:
-        #alpha = AlphaTr(rad_in, v1, v2)
         beta = BetaBase(rad_in, gamma, v1, v2)
         delta = DeltaUp(rad_in, gamma, v1, v2)
         theta = ThetaEquiv(rad_in, topDepth, gamma, X, v1, v2)
@@ -114,99 +113,104 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
         radmax_upwards = min(np.arcsin(v2/v1), DeltaUp(radmax_downwards, gamma, v1, v2))
     except:
         radmax_upwards = DeltaUp(radmax_downwards, gamma, v1, v2)
-    
+    print(np.degrees(radmax_downwards), np.degrees(radmax_upwards))
     srcMin = Xmin(radmax_downwards, topDepth)
     srcMax = Xmax(radmax_downwards, topDepth, gamma, dhmax)
     XsrcVector = np.linspace(srcMin, srcMax, nsrc)
     XsrcStep = XsrcVector[-1] - XsrcVector[-2]
     angStep = np.arctan(XsrcStep / topDepth)
-    print(np.degrees(radmax_downwards))
-    print(np.degrees(angStep))
     print(XsrcVector)
-    sizeX = nsrc 
+    sizeX = int(np.ceil(1+2 * radmax_downwards/angStep))
+    spanSize = np.zeros(XsrcVector.size, dtype='int')
     for i in range(XsrcVector.size):
         th, be, ru, rl, tt, tb, dhu, dhl, cdpu, cdpl = wedge_shotgather(gamma, radmax_downwards, \
                 radmax_upwards, angStep, topDepth, velocities, XsrcVector[i])
+        spanSize[i] = th.size
         if i == 0:
-            TH = np.zeros(sizeX, dtype='float')
+            TH = np.nan * np.ones(sizeX, dtype='float')
             TH[:th.size] = th
-            BE = np.zeros(sizeX, dtype='float')
+            BE = np.nan * np.ones(sizeX, dtype='float')
             BE[:be.size] = be
-            RU = np.zeros(sizeX, dtype='float')
+            RU = np.nan * np.ones(sizeX, dtype='float')
             RU[:ru.size] = ru
-            RL = np.zeros(sizeX, dtype='float')
+            RL = np.nan * np.ones(sizeX, dtype='float')
             RL[:rl.size] = rl
-            TT = np.zeros(sizeX, dtype='float')
+            TT = np.nan * np.ones(sizeX, dtype='float')
             TT[:tt.size] = tt
-            TB = np.zeros(sizeX, dtype='float')
+            TB = np.nan * np.ones(sizeX, dtype='float')
             TB[:tb.size] = tb
-            DHU = np.zeros(sizeX, dtype='float')
+            DHU = np.nan * np.ones(sizeX, dtype='float')
             DHU[:dhu.size] = dhu
-            DHL = np.zeros(sizeX, dtype='float')
+            DHL = np.nan * np.ones(sizeX, dtype='float')
             DHL[:dhl.size] = dhl
-            CDPU = np.zeros(sizeX, dtype='float')
+            CDPU = np.nan * np.ones(sizeX, dtype='float')
             CDPU[:cdpu.size] = cdpu
-            CDPL = np.zeros(sizeX, dtype='float')
+            CDPL = np.nan * np.ones(sizeX, dtype='float')
             CDPL[:cdpl.size] = cdpl
-            X = np.zeros(sizeX, dtype='float')
+            X = np.nan * np.ones(sizeX, dtype='float')
             X[:cdpl.size] = XsrcVector[i] * np.ones(cdpl.size, dtype='float')
-        else:
-            aux = np.zeros(sizeX, dtype='float')
+        else:   
+            aux = np.nan * np.ones(sizeX, dtype='float')
             aux[:th.size] = th
             TH = np.vstack([TH, aux])
+            
             aux[:be.size] = be
             BE = np.vstack([BE, aux])
+            
             aux[:ru.size] = ru
             RU = np.vstack([RU, aux])
+            
             aux[:rl.size] = rl
             RL = np.vstack([RL, aux])
+            
             aux[:tt.size] = tt
             TT = np.vstack([TT, aux])
+            
             aux[:tb.size] = tb
             TB = np.vstack([TB, aux])
+
             aux[:dhu.size] = dhu
             DHU = np.vstack([DHU, aux])
+
             aux[:dhl.size] = dhl
             DHL = np.vstack([DHL, aux])
+            
             aux[:cdpu.size] = cdpu
             CDPU = np.vstack([CDPU, aux])
-            aux[:cdpl.size] = cdpl
+            
+            aux[:cdpl.size] = dhl
             CDPL = np.vstack([CDPL, aux])
-            aux[:th.size] = XsrcVector[i] * np.ones(th.size, dtype='float')
+            
+            aux[:cdpl.size] = XsrcVector[i] * np.ones(cdpl.size, dtype='float')
             X = np.vstack([X, aux])
             del(aux)
-    return TH, BE, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X 
+            
+    return TH[~np.isnan(TH)], BE[~np.isnan(BE)], RU[~np.isnan(RU)], RL[~np.isnan(RL)], TT[~np.isnan(TT)], \
+            TB[~np.isnan(TB)], DHU[~np.isnan(DHU)], DHL[~np.isnan(DHL)], CDPU[~np.isnan(CDPU)], \
+            CDPL[~np.isnan(CDPL)], X[~np.isnan(X)], XsrcStep, XsrcVector 
 
 
-def CDPgather(srcspacing, cdpMax, maxsize, CDParray, a1,a2,a3,a4,a5,a6,a7,a8):
+def CDPgather(srcspacing, cdpMax, CDParray, a1,a2,a3,a4,a5,a6,a7,a8):
     '''
     all the arrays should be reshaped to 1d
     '''
-    cdpRanges = np.arange(0.0, cdpMax+2*srcspacing, srcspacing)
-    gatherInfo = np.zeros([9, maxsize])
-    k = 0
+    cdpRanges = np.arange(0.0, cdpMax + 2 * srcspacing, srcspacing)
+    cdpVector = np.zeros([cdpRanges.size-1, 2])
+    gatherInfo = np.zeros([cdpRanges.size-1, 8, a1.size], dtype='float')
+    
     for i in range(cdpRanges.size-1):
-        locix = np.where((CDParray > cdpRanges[i]) & (CDParray < cdpRanges[i+1])) #1d array w indices
-        for j in locix[0]:
-            print (i, j, k)
-            gatherInfo[0][k] = CDParray[j]
-            gatherInfo[1][k] = a1[j]
-            gatherInfo[2][k] = a2[j]
-            gatherInfo[3][k] = a3[j]
-            gatherInfo[4][k] = a4[j]
-            gatherInfo[5][k] = a5[j]
-            gatherInfo[5][k] = a5[j]
-            gatherInfo[6][k] = a6[j]
-            gatherInfo[7][k] = a7[j]
-            gatherInfo[8][k] = a8[j]
+        k = 0
+        locix = np.where((CDParray >= cdpRanges[i]) & (CDParray < cdpRanges[i+1])) #1d array w indices
+        cdpVector[i] = (cdpRanges[i],cdpRanges[i+1])
+        for e in locix[0]:
+            gatherInfo[i][0][k] = a1[e]
+            gatherInfo[i][1][k] = a2[e]
+            gatherInfo[i][2][k] = a3[e]
+            gatherInfo[i][3][k] = a4[e]
+            gatherInfo[i][4][k] = a5[e]
+            gatherInfo[i][5][k] = a6[e]
+            gatherInfo[i][6][k] = a7[e]
+            gatherInfo[i][7][k] = a8[e]
             k += 1
-    return gatherInfo
-
-
-
-        
-        
-
-
-
+    return gatherInfo, cdpVector
 
