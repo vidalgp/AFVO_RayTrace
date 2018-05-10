@@ -118,7 +118,7 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
     XsrcVector = np.linspace(srcMin, srcMax, nsrc)
     XsrcStep = XsrcVector[-1] - XsrcVector[-2]
     angStep = np.arctan(XsrcStep / topDepth)
-    print(XsrcVector)
+    #print(XsrcVector)
     sizeX = int(np.ceil(1+2 * radmax_downwards/angStep))
     spanSize = np.zeros(XsrcVector.size, dtype='int')
     for i in range(XsrcVector.size):
