@@ -9,7 +9,7 @@ def main():
     import time
     start = time.time()
     if len(sys.argv) > 1:
-        mtype, Aq, nsrc = sys.argv[1], sys.argv[2], int(sys.argv[3])
+        mtype, Qbool, nsrc = sys.argv[1], sys.argv[2], int(sys.argv[3])
     
     mod = Model(mtype)
     dt = 0.0001 #ms
@@ -18,13 +18,13 @@ def main():
     angstep = 1
     dhmax = 51
     wedgeSlope = 5
-    global TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X, srcSpacing, srcVector 
+    global TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X, srcSpacing, srcVector
     TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X, srcSpacing, srcVector = wedge_array_maker(mod, wedgeSlope, \
             dhmax, angmax, topdepth, nsrc)
 
     global cdpVector,sps
     TH, B, RU, RL, TT, TB, DHU, DHL, cdpVector, sps = CDPgather(srcSpacing, CDPU.max(), CDPU, TH, B, RU, RL, \
-            TT, TB, DHU, X)
+            TT, TB, DHU, DHL)
 
     dimX = TH.shape[1]
     dimY = int(TB[TB!=0].max()/dt * (1.05))
@@ -35,7 +35,7 @@ def main():
     ymin = TT[TT>0].min()* 0.95
     seismik = Seismic(dt, dimX, dimY, dimZ)
 
-    create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
+    create_timewedgeModel(seismik, mod, dt, np.degrees(TH), np.degrees(B), TB, TT, wedgeSlope, Qbool)
     
     global Tmin, Tmax, Bmin, Bmax
     Tmin = TT-0.1
@@ -61,7 +61,7 @@ def main():
 
     global fullArray, tminT, tmaxT
     totalTraces = seismik.zLen * seismik.xTraces
-    fullArray = np.zeros([totalTraces, 4], dtype='float') 
+    fullArray = np.zeros([totalTraces, 5], dtype='float') 
     tt = TT.reshape(totalTraces)
     tb = TB.reshape(totalTraces)
     theta = np.degrees(TH.reshape(totalTraces))
@@ -76,8 +76,9 @@ def main():
     fullArray.T[1] = dhu
     fullArray.T[2] = AVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
+    fullArray.T[4] = dhl
 
-    fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
+    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
     xmin = np.floor(fullArray.T[1].min())
     xmax = np.ceil(fullArray.T[1].max())
@@ -92,16 +93,17 @@ def main():
     print('\nStarting AFVO map computations: Base reflector')
     tminB = 0.5 * (tb + tt)
     tmaxB = tb + 0.1 
-    fullArray.T[1] = dhl
+    xmin = np.floor(fullArray.T[4].min())
+    xmax = np.ceil(fullArray.T[4].max())
     
     fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
 
-    fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
+    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
-    plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
+    plot_map(fullArray.T[4], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'amp', 'BsimpleBase')
-    plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
+    plot_map(fullArray.T[4], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'freq', 'BsimpleBase')
  
     end = time.time()

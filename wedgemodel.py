@@ -113,7 +113,6 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
         radmax_upwards = min(np.arcsin(v2/v1), DeltaUp(radmax_downwards, gamma, v1, v2))
     except:
         radmax_upwards = DeltaUp(radmax_downwards, gamma, v1, v2)
-    print(np.degrees(radmax_downwards), np.degrees(radmax_upwards))
     srcMin = Xmin(radmax_downwards, topDepth)
     srcMax = Xmax(radmax_downwards, topDepth, gamma, dhmax)
     XsrcVector = np.linspace(srcMin, srcMax, nsrc)
@@ -178,13 +177,12 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
             aux[:cdpu.size] = cdpu
             CDPU = np.vstack([CDPU, aux])
             
-            aux[:cdpl.size] = dhl
+            aux[:cdpl.size] = cdpl
             CDPL = np.vstack([CDPL, aux])
             
             aux[:cdpl.size] = XsrcVector[i] * np.ones(cdpl.size, dtype='float')
             X = np.vstack([X, aux])
             del(aux)
-            
     return TH[~np.isnan(TH)], BE[~np.isnan(BE)], RU[~np.isnan(RU)], RL[~np.isnan(RL)], TT[~np.isnan(TT)], \
             TB[~np.isnan(TB)], DHU[~np.isnan(DHU)], DHL[~np.isnan(DHL)], CDPU[~np.isnan(CDPU)], \
             CDPL[~np.isnan(CDPL)], X[~np.isnan(X)], XsrcStep, XsrcVector 
@@ -247,6 +245,14 @@ def CDPgather(srcspacing, cdpMax, CDParray, th, be, ru, rl, tt, tb, dhu, dhl):
     DHL = np.delete(DHL, forDel, 0)            
     sps = np.delete(sps, forDel, 0)            
     cdpVector = np.delete(cdpVector, forDel, 0)            
-
     return TH, BE, RU, RL, TT, TB, DHU, DHL, cdpVector, sps
 
+def digitize_wedge(Rs, model, dt, iAngle, beta, t, interf, wedgeAng):
+    vp = model.vp[:-1]
+    vs = model.vs[:-1]
+    rho = model.rho[:-1]
+    if (t>0):
+        t_ix = int(t / dt)
+        Rs.add_wedge_reflection(vp, vs, rho, iAngle, beta, t_ix, interf, wedgeAng)
+    else:
+        pass

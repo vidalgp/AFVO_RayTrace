@@ -318,7 +318,7 @@ class ReflectivityS(object):
                     vp[0], vs[0], rho[0], beta, 'PdPd'))
             self._rserie[ix] += final
     
-    def add_wedge_reflection(self, vp, vs, rho, iAngle, ix, reflector, wedgeAngle=0):
+    def add_wedge_reflection(self, vp, vs, rho, iAngle, beta, ix, reflector, wedgeAngle=5):
         from bruges.reflection import zoeppritz_element
         if reflector is 'top':
             self._rserie[ix] += np.real(zoeppritz_element(vp[0], vs[0], rho[0], \
@@ -326,8 +326,6 @@ class ReflectivityS(object):
         elif reflector is 'base':
             transm = np.real(zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], \
                     rho[1], iAngle, 'PdPd'))
-            alpha = np.degrees(np.arcsin( (vp[1]/vp[0]) * np.sin(np.radians(iAngle))))
-            beta = alpha + wedgeAngle
             delta = beta + wedgeAngle
             if delta >=90:
                 raise ValueError("Ray won't reach surface")
