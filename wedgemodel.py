@@ -190,27 +190,63 @@ def wedge_array_maker(model, wedgeSlope, dhmax, maxAng, topDepth, nsrc=500):
             CDPL[~np.isnan(CDPL)], X[~np.isnan(X)], XsrcStep, XsrcVector 
 
 
-def CDPgather(srcspacing, cdpMax, CDParray, a1,a2,a3,a4,a5,a6,a7,a8):
+def CDPgather(srcspacing, cdpMax, CDParray, th, be, ru, rl, tt, tb, dhu, dhl):
     '''
     all the arrays should be reshaped to 1d
     '''
     cdpRanges = np.arange(0.0, cdpMax + 2 * srcspacing, srcspacing)
-    cdpVector = np.zeros([cdpRanges.size-1, 2])
-    gatherInfo = np.zeros([cdpRanges.size-1, 8, a1.size], dtype='float')
-    
+    zSize = cdpRanges.size-1
+    cdpVector = np.zeros([zSize, 2])
+
+    TH = np.zeros([zSize, zSize], dtype='float')
+    BE = np.zeros([zSize, zSize], dtype='float')
+    RU = np.zeros([zSize, zSize], dtype='float')
+    RL = np.zeros([zSize, zSize], dtype='float')
+    TT = np.zeros([zSize, zSize], dtype='float')
+    TB = np.zeros([zSize, zSize], dtype='float')
+    DHU = np.zeros([zSize, zSize], dtype='float')
+    DHL = np.zeros([zSize, zSize], dtype='float')
+    sps = np.zeros(zSize, dtype='int')
+
     for i in range(cdpRanges.size-1):
         k = 0
         locix = np.where((CDParray >= cdpRanges[i]) & (CDParray < cdpRanges[i+1])) #1d array w indices
         cdpVector[i] = (cdpRanges[i],cdpRanges[i+1])
         for e in locix[0]:
-            gatherInfo[i][0][k] = a1[e]
-            gatherInfo[i][1][k] = a2[e]
-            gatherInfo[i][2][k] = a3[e]
-            gatherInfo[i][3][k] = a4[e]
-            gatherInfo[i][4][k] = a5[e]
-            gatherInfo[i][5][k] = a6[e]
-            gatherInfo[i][6][k] = a7[e]
-            gatherInfo[i][7][k] = a8[e]
+            TH[i][k] = th[e]
+            BE[i][k] = be[e]
+            RU[i][k] = ru[e]
+            RL[i][k] = rl[e]
+            TT[i][k] = tt[e]
+            TB[i][k] = tb[e]
+            DHU[i][k] = dhu[e]
+            DHL[i][k] = dhl[e]
             k += 1
-    return gatherInfo, cdpVector
+        pos = np.where(TH[i]==0)[0][0]
+        sps[i] = pos
+        TH[i][pos:] = TH[i][pos-1]
+        BE[i][pos:] = BE[i][pos-1]
+        RU[i][pos:] = RU[i][pos-1]
+        RL[i][pos:] = RL[i][pos-1]
+        TT[i][pos:] = TT[i][pos-1]
+        TB[i][pos:] = TB[i][pos-1]
+        DHU[i][pos:] = DHU[i][pos-1]
+        DHL[i][pos:] = DHL[i][pos-1]
+    
+    forDel=np.array([], dtype='int')
+    for i, column in enumerate(TH):
+        if column.sum()==0 or column.sum==column.min():
+            forDel = np.hstack([forDel, int(i)])
+    TH = np.delete(TH, forDel, 0)            
+    BE = np.delete(BE, forDel, 0)            
+    RU = np.delete(RU, forDel, 0)            
+    RL = np.delete(RL, forDel, 0)            
+    TT = np.delete(TT, forDel, 0)            
+    TB = np.delete(TB, forDel, 0)            
+    DHU = np.delete(DHU, forDel, 0)            
+    DHL = np.delete(DHL, forDel, 0)            
+    sps = np.delete(sps, forDel, 0)            
+    cdpVector = np.delete(cdpVector, forDel, 0)            
+
+    return TH, BE, RU, RL, TT, TB, DHU, DHL, cdpVector, sps
 

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import CubicSpline, interp1d
 from utils import*
 import seaborn as sns
 
@@ -16,11 +16,26 @@ def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, sps=0, name=''):
     baseRi = AVO(gather, tmin2, tmax2, dt)
     baseFi = FVO(gather, tmin2, tmax2, dt)
     
-    ftopRi = CubicSpline(angles[:sps], topRi[:sps])
-    ftopFi = CubicSpline(angles[:sps], topFi[:sps])
+    orderedA = np.transpose(np.vstack([angles[:sps], topRi[:sps], topFi[:sps], baseRi[:sps], baseFi[:sps]]))
+    orderedA = orderedA[orderedA[:,0].argsort()]
+    angles = np.transpose(orderedA)[0]
+    topRi = np.transpose(orderedA)[1]
+    topFi = np.transpose(orderedA)[2]
+    baseRi = np.transpose(orderedA)[3]
+    baseFi = np.transpose(orderedA)[4]
+
+    if angles.size>2:
+        ftopRi = CubicSpline(angles, topRi)
+        ftopFi = CubicSpline(angles, topFi)
     
-    fbaseRi = CubicSpline(angles[:sps], baseRi[:sps])
-    fbaseFi = CubicSpline(angles[:sps], baseFi[:sps])
+        fbaseRi = CubicSpline(angles, baseRi)
+        fbaseFi = CubicSpline(angles, baseFi)
+    else:
+        ftopRi = interp1d(angles, topRi)
+        ftopFi = interp1d(angles, topFi)
+    
+        fbaseRi = interp1d(angles, baseRi)
+        fbaseFi = interp1d(angles, baseFi)
 
     angles_new = np.linspace(angles.min(), angles.max(), 100, endpoint=True)
 
