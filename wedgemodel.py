@@ -234,8 +234,8 @@ def CDPgather(srcspacing, cdpMax, CDParray, th, be, ru, rl, tt, tb, dhu, dhl):
         DHL[i][pos:] = DHL[i][pos-1]
     
     forDel=np.array([], dtype='int')
-    for i, column in enumerate(TH):
-        if column.sum()==0 or column.sum==column.min():
+    for i, column in enumerate(RU):
+        if column[:sps[i]].sum()<=column[0]:
             forDel = np.hstack([forDel, int(i)])
     TH = np.delete(TH, forDel, 0)            
     BE = np.delete(BE, forDel, 0)            

@@ -22,7 +22,7 @@ def main():
     TH, B, RU, RL, TT, TB, DHU, DHL, CDPU, CDPL, X, srcSpacing, srcVector = wedge_array_maker(mod, wedgeSlope, \
             dhmax, angmax, topdepth, nsrc)
 
-    global gatherInfoTop, cdpVector,sps
+    global cdpVector,sps
     TH, B, RU, RL, TT, TB, DHU, DHL, cdpVector, sps = CDPgather(srcSpacing, CDPU.max(), CDPU, TH, B, RU, RL, \
             TT, TB, DHU, X)
 
@@ -59,54 +59,56 @@ def main():
     plot_AFVO(seismik.get_amplitude[cdp], np.degrees(TH[cdp]), Tmin[cdp], Tmax[cdp], Bmin[cdp], \
             Bmax[cdp], seismik.dt,sps[cdp],('TopBase_{}').format(cdpVector[cdp]))
 
-    #global fullArray, tminT, tmaxT
-    #totalTraces = seismik.zLen * seismik.xTraces
-    #fullArray = np.zeros([totalTraces, 4], dtype='float') 
-    #tt = TT.reshape(totalTraces)
-    #tb = TB.reshape(totalTraces)
-    #theta = np.degrees(TH.reshape(totalTraces))
-    #dh = DH.reshape(totalTraces) 
+    global fullArray, tminT, tmaxT
+    totalTraces = seismik.zLen * seismik.xTraces
+    fullArray = np.zeros([totalTraces, 4], dtype='float') 
+    tt = TT.reshape(totalTraces)
+    tb = TB.reshape(totalTraces)
+    theta = np.degrees(TH.reshape(totalTraces))
+    dhu = DHU.reshape(totalTraces) 
+    dhl = DHL.reshape(totalTraces) 
   
-    #print('\nStarting AFVO map computations: Top reflector')
-    #tminT = tt - 0.1
-    #tmaxT = 0.5 * (tt + tb)
+    print('\nStarting AFVO map computations: Top reflector')
+    tminT = tt - 0.1
+    tmaxT = 0.5 * (tt + tb)
 
-    #fullArray.T[0] = theta
-    #fullArray.T[1] = dh
-    #fullArray.T[2] = AVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
-    #fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
+    fullArray.T[0] = theta
+    fullArray.T[1] = dhu
+    fullArray.T[2] = AVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
+    fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
 
-    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
+    fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
-    #xmin = np.floor(fullArray.T[1].min())
-    #xmax = np.ceil(fullArray.T[1].max())
-    #ymin = np.floor(fullArray.T[0].min())
-    #ymax = np.ceil(fullArray.T[0].max())
-    #
-    #plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
-    #        ['dhT','angleT'], 'amp', 'BsimpleTop')
-    #plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
-    #        ['dhT','angleT'], 'freq', 'BsimpleTop')
+    xmin = np.floor(fullArray.T[1].min())
+    xmax = np.ceil(fullArray.T[1].max())
+    ymin = np.floor(fullArray.T[0].min())
+    ymax = np.ceil(fullArray.T[0].max())
+    
+    plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
+            ['dhT','angleT'], 'amp', 'BsimpleTop')
+    plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
+            ['dhT','angleT'], 'freq', 'BsimpleTop')
 
-    #print('\nStarting AFVO map computations: Base reflector')
-    #tminB = 0.5 * (tb + tt)
-    #tmaxB = tb + 0.1 
-    #
-    #fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
-    #fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
+    print('\nStarting AFVO map computations: Base reflector')
+    tminB = 0.5 * (tb + tt)
+    tmaxB = tb + 0.1 
+    fullArray.T[1] = dhl
+    
+    fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
+    fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
 
-    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
+    fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
-    #plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
-    #        ['dhT','angleT'], 'amp', 'BsimpleBase')
-    #plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
-    #        ['dhT','angleT'], 'freq', 'BsimpleBase')
+    plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
+            ['dhT','angleT'], 'amp', 'BsimpleBase')
+    plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
+            ['dhT','angleT'], 'freq', 'BsimpleBase')
  
-    #end = time.time()
-    #print(("\nElapsed time {}s\n").format(end - start))
+    end = time.time()
+    print(("\nElapsed time {}s\n").format(end - start))
 
-    #plt.close('all') 
-    #return 0
+    plt.close('all') 
+    return 0
 
 if (__name__ == '__main__'):
     main()
