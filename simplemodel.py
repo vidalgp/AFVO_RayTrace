@@ -16,7 +16,6 @@ __status__ = "En Desarrollo"
 import numpy as np
 
 def alpha_tr(angle_in, V1, V2):
-    print(V1, V2, np.degrees(angle_in))
     return np.arcsin(np.sin(angle_in) * V2 / V1)
 
 def simple_offset(angle_in, topDepth, dh, V1, V2):

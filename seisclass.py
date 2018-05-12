@@ -552,28 +552,35 @@ class Seismic(object):
         plt.savefig(('fig/seismo_den{}.png').format(z), bbox_inches='tight')
 
     
-    def plot_seismogram(self, ymax=None, ymin = 0, maxtrace=0, z = 0, depth = False, excursion=1):
+    def plot_seismogram(self, ymax=None, ymin = 0, maxtrace=0, z = 0, depth = False, excursion=1, angleVec=[]):
         '''
         Created by: Wes Hamlyn, 2014
         Modified by: Vidal Gonzalez P, 2018
         '''
+
+
         if not maxtrace:
             maxtrace = self._xTraces
         if not ymax:
             ymax = self._time
         yLabel = "Tiempo Doble de Viaje [$s^{-4}$]"
-        xTitle = 'Sismograma en Tiempo'
+        xTitle = r'Ángulo de incidencia $\theta$ [$\circ$]'
         tvec = self._tvec
         excursion = excursion
-        fig = plt.figure(figsize=(8, 6))
+        fig = plt.figure(figsize=(18, 12))
         gs = gridspec.GridSpec(1, 1)
         ax1 = plt.subplot(gs[0,0])
         self.plot_vawig(ax1, self._SEIS[z], tvec, excursion, maxtrace)
         ax1.set_ylim([ymin,ymax])
         ax1.set_xlim((-.999,maxtrace-.001))
         ax1.invert_yaxis()
-        ax1.set_xlabel(xTitle, fontsize=14)
+        ax1.set_xlabel(xTitle)
         ax1.set_ylabel(yLabel)
+        if len(angleVec):
+            plt.xticks([])
+            locs = range(maxtrace)
+            plt.xticks(locs, tuple(map(lambda x: ('{:2.1f}').format(x), \
+                    angleVec[:len(locs)])))
         plt.tight_layout()
         plt.savefig(('fig/seismo_wig{}.png').format(z), bbox_inches='tight')
 
@@ -615,11 +622,10 @@ def main():
     for i in range(ss.xTraces):
         ss.add_trace(tr, i, 0)
     
+    ss.plot_seismogram(angleVec=np.random.randn(100)); plt.show()
     ss.plot_density()
-    ss.plot_seismogram(); plt.show()
     
-    ss.normalize()
-    ss.plot_seismogram(); plt.show()
+    plt.show()
 
     return 0
 

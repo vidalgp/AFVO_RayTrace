@@ -47,15 +47,17 @@ def main():
     Bmax[Bmax>0] += 0.1
     
     print('\nStarting AFVO single computations\n')
-    for cdp in range(0, seismik.zLen, 1):
+    for cdp in range(0, seismik.zLen, 5):
         print(('AFVO for cdp = {}m').format(cdpVector[cdp]))
         plot_AFVO(seismik.get_amplitude[cdp], np.degrees(TH[cdp]), Tmin[cdp], Tmax[cdp], Bmin[cdp], \
             Bmax[cdp], seismik.dt,sps[cdp],('TopBase_{}').format(cdpVector[cdp]))
-        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=5, z=cdp)
+        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=5, z=cdp, \
+                angleVec=np.degrees(TH[cdp]))
         plt.close('all') 
     
     cdp = seismik.zLen - 1
-    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=5, z=cdp)
+    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=5, z=cdp, \
+            angleVec=np.degrees(TH[cdp]))
     plot_AFVO(seismik.get_amplitude[cdp], np.degrees(TH[cdp]), Tmin[cdp], Tmax[cdp], Bmin[cdp], \
             Bmax[cdp], seismik.dt,sps[cdp],('TopBase_{}').format(cdpVector[cdp]))
 
@@ -78,8 +80,6 @@ def main():
     fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
     fullArray.T[4] = dhl
 
-    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
-
     xmin = np.floor(fullArray.T[1].min())
     xmax = np.ceil(fullArray.T[1].max())
     ymin = np.floor(fullArray.T[0].min())
@@ -98,8 +98,6 @@ def main():
     
     fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
-
-    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
     plot_map(fullArray.T[4], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'amp', 'BsimpleBase')
