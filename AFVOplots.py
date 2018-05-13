@@ -19,6 +19,7 @@ def plot_AFVO(gather, angles, tmin1, tmax1, tmin2, tmax2, dt, sps=0, name=''):
     orderedA = np.transpose(np.vstack([angles[:sps], topRi[:sps], topFi[:sps], baseRi[:sps], baseFi[:sps]]))
     orderedA = orderedA[orderedA[:,0].argsort()]
     angles = np.transpose(orderedA)[0]
+    np.savetxt('angles.log', angles)
     topRi = np.transpose(orderedA)[1]
     topFi = np.transpose(orderedA)[2]
     baseRi = np.transpose(orderedA)[3]

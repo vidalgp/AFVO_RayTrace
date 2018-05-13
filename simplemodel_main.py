@@ -54,7 +54,7 @@ def main():
     dh = seismik.zLen - 1
     seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh, angleVec=np.degrees(TH[dh]))
     plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
-            Bmax[dh], seismik.dt,sps[dh],('TopBase_{}').format(dh*dhstep))
+            Bmax[dh], seismik.dt,sps[dh],('TopBase_{}').format(dh*dhstep+dhmin))
 
     global fullArray, tminT, tmaxT
     totalTraces = seismik.zLen * seismik.xTraces

@@ -24,7 +24,7 @@ def simple_offset(angle_in, topDepth, dh, V1, V2):
 def theta_equivalent(angle_in, topDepth, dh, V1, V2):
     return np.arctan(0.5 * simple_offset(angle_in, topDepth, dh, V1, V2) / topDepth)
 
-def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=True):
+def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=False):
     '''
     shot gather equivalent to cmp gather considering flat paralell reflectors
     critical: consider critical angles in ray tracing 
