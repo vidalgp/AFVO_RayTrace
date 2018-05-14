@@ -18,13 +18,13 @@ def main():
     angstep = 1
     dhmin = 1
     dhmax = 51
-    dhstep = 10
-    global TH, B, RU, RL, TT, TB, DH, sps
+    dhstep = 1
+    #global TH, B, RU, RL, TT, TB, DH, sps
     TH,B,RU,RL,TT,TB,DH, sps = simple_array_maker(mod, dhmin, dhmax, dhstep, angmax, angstep, \
             topdepth)
 
     dimX = TH.shape[1]
-    dimY = int(TB[TB!=0].max()/dt * (1.05))
+    dimY = int(TB.max()/dt * (1.02))
     dimZ = TH.shape[0]
     
     print(mod)
@@ -34,13 +34,13 @@ def main():
     print(('\n\tDimensiones del cubo sintetico DH-Gather a generar:\n(angulos x muestras x espesores)\n{} x {} x {}').format(dimX, dimY, dimZ))
 
 
-    global seismik, ymin, ymax
+    #global seismik, ymin, ymax
     ymax = dimY*dt
     ymin = TT[0].min()* 0.95
     seismik = Seismic(dt, dimX, dimY, dimZ)
     create_timeModel(seismik, mod, dt, np.degrees(TH), TB, TT, Aq)
     
-    global Tmin, Tmax, Bmin, Bmax
+    #global Tmin, Tmax, Bmin, Bmax
     Tmin = TT-0.1
     Tmin[Tmin<0] = 0.0
     Tmax = 0.5 * (TT + TB)
@@ -54,17 +54,17 @@ def main():
         print(('AFVO para espesor dh = {}m').format(dh * dhstep + dhmin))
         plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
                 Bmax[dh], seismik.dt, sps[dh],('TopBase_{}').format(dh * dhstep + dhmin))
-        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh, \
+        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=7, z=dh, \
                 angleVec=np.degrees(TH[dh]))
         plt.close('all') 
     
     dh = seismik.zLen - 1
     print(('AFVO para espesor dh = {}m').format(dh * dhstep + dhmin))
-    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh, angleVec=np.degrees(TH[dh]))
+    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=7, z=dh, angleVec=np.degrees(TH[dh]))
     plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
             Bmax[dh], seismik.dt,sps[dh],('TopBase_{}').format(dh*dhstep+dhmin))
 
-    global fullArray, tminT, tmaxT
+    #global fullArray, tminT, tmaxT
     totalTraces = seismik.zLen * seismik.xTraces
     fullArray = np.zeros([totalTraces, 4], dtype='float') 
     tt = TT.reshape(totalTraces)
@@ -81,7 +81,7 @@ def main():
     fullArray.T[2] = AVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
 
-    fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
+    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
     xmin = np.floor(fullArray.T[1].min())
     xmax = np.ceil(fullArray.T[1].max())
@@ -100,7 +100,7 @@ def main():
     fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
 
-    fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
+    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
     plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'amp', 'BsimpleBase')

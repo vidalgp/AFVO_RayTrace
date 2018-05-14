@@ -27,7 +27,7 @@ def main():
             TT, TB, DHU, DHL)
 
     dimX = TH.shape[1]
-    dimY = int(TB[TB!=0].max()/dt * (1.05))
+    dimY = int(TB.max()/dt * (1.02))
     dimZ = TH.shape[0]
 
     print(mod)
