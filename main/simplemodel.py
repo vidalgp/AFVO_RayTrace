@@ -57,7 +57,10 @@ def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=False):
             if ((theta >= radmax_downwards) or (alpha >= radmax_upwards)):
                 break
         else:    
-            if (theta >= np.radians(maxAng) or (rad_in >=radmax_downwards)):
+            try:
+                if (theta >= np.radians(maxAng)):
+                    break
+            except:
                 break
         i += 1
     

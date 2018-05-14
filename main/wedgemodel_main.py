@@ -56,13 +56,13 @@ def main():
         print(('AFVO para CDP = {}m').format(cdpVector[cdp]))
         plot_AFVO(seismik.get_amplitude[cdp], np.degrees(TH[cdp]), Tmin[cdp], Tmax[cdp], Bmin[cdp], \
             Bmax[cdp], seismik.dt,sps[cdp],('TopBase_{}').format(cdpVector[cdp]))
-        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=5, z=cdp, \
+        seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=6, z=cdp, \
                 angleVec=np.degrees(TH[cdp]))
         plt.close('all') 
     
     cdp = seismik.zLen - 1
     print(('AFVO para CDP = {}m').format(cdpVector[cdp]))
-    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=5, z=cdp, \
+    seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[cdp], excursion=6, z=cdp, \
             angleVec=np.degrees(TH[cdp]))
     plot_AFVO(seismik.get_amplitude[cdp], np.degrees(TH[cdp]), Tmin[cdp], Tmax[cdp], Bmin[cdp], \
             Bmax[cdp], seismik.dt,sps[cdp],('TopBase_{}').format(cdpVector[cdp]))
