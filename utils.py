@@ -6,10 +6,10 @@ from wedgemodel import digitize_wedge
 
 
 def create_timewedgeModel(seismic, model, dtc, Theta, Beta, tBottom, tTop, wedgeAngle, Q=False):
-    print('\n\n Synthetic wedge time model calculations\n\n')
+    print('\n\n Cálculos del modelo de cuña sintético\n\n')
     FreqVel = model.vp[0]
     for z in range(seismic.zLen):
-        print(('Computing cdp #{} of {}').format(z+1, seismic.zLen))
+        print(('CDP #{} de {}').format(z+1, seismic.zLen))
         for x in range(seismic.xTraces):
             R = ReflectivityS( ns = seismic.ySamples )
             #top reflector
@@ -32,10 +32,10 @@ def create_timewedgeModel(seismic, model, dtc, Theta, Beta, tBottom, tTop, wedge
             seismic.add_trace(trace, x, z)
 
 def create_timeModel(seismic, model, dtc, Theta, tBottom, tTop, Q=False):
-    print('\n\n Synthetic simple time model calculations\n\n')
+    print('\n\n Cálculos del modelo de cuña sintético\n\n')
     FreqVel = model.vp[0]
     for z in range(seismic.zLen):
-        print(('Computing dh #{} of {}').format(z+1, seismic.zLen))
+        print(('DH #{} de {}').format(z+1, seismic.zLen))
         for x in range(seismic.xTraces):
             R = ReflectivityS( ns = seismic.ySamples )
             #top reflector

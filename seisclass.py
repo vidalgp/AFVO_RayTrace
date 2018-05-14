@@ -29,27 +29,27 @@ class Model(object):
         def poisson(vp, vs):
             return ( 0.5 * ( (vp/vs)**2 - 2 ) / ( (vp/vs)**2 - 1) )
 
-        if m is 'bright' or m is 'b':
+        if m is 'b':
             self._vp = [2735.0, 2844.0, 2735.0]
             self._vs = [1294.0, 1335.0, 1294.0]
             self._rho= [2140.0, 2400.0, 2140.0]
             self._poisson = poisson(np.asarray(self._vp), np.asarray(self._vs))
-        elif m is 'dimmed' or m is 'd':
+        elif m is 'd':
             self._vp = [3580.0, 3500.0, 3580.0]
             self._vs = [1991.0, 1853.0, 1991.0]
             self._rho= [2330.0, 2540.0, 2330.0]
             self._poisson = poisson(np.asarray(self._vp), np.asarray(self._vs))
-        elif m is 'ostrander' or m is 'o':
+        elif m is 'o':
             self._vp = [3048.0, 2438.0, 3048.0]
             self._vs = [1244.0, 1626.0, 1244.0]
             self._rho= [2400.0, 2140.0, 2400.0]
             self._poisson = poisson(np.asarray(self._vp), np.asarray(self._vs))
-        elif m is 'mazzottiA' or m is 'a':
+        elif m is 'a':
             self._vp = [2260.0, 2770.0, 2345.0]
             self._vs = [1075.0, 1385.0, 1170.0]
             self._rho= [2200.0, 2300.0, 2170.0]
             self._poisson = poisson(np.asarray(self._vp), np.asarray(self._vs))
-        elif m is 'mazzottiB' or m is 'm':
+        elif m is 'm':
             self._vp = [2260.0, 2000.0, 2345.0]
             self._vs = [1075.0, 1330.0, 1170.0]
             self._rho= [2200.0, 2300.0, 2170.0]
@@ -88,7 +88,7 @@ class Model(object):
                 self.rho[1], self.poisson[1])
         under = ('<{}\t{}\t{}\t{:.2f}\t>\n').format(self.vp[2], self.vs[2], \
                 self.rho[2], self.poisson[2])
-        return(("{}Overlying bed\t{}Middle Bed\t{}Underlying bed\t{}"\
+        return(("\tInformacion del Modelo:\n{}Capa Superior\t{}Capa intermedia\t{}Capa inferior\t{}"\
                 ).format(ref, over, sandy, under))
 
 
@@ -278,8 +278,8 @@ class Wavelet(Signal):
         self.FFT_analysis()
 
     def __str__(self):
-        return ('\n\tWavelet information\nType: {:s}\nLength = {:.6f} ms\
-                \nFrequency: {} Hz\nSampling rate: {:.6f} ms\n# of samples: {:d}\n'\
+        return ('\n\tInformacion de la Ondicula\nTipo: {:s}\nDuracion = {:.6f} ms\
+                \nFrecuencia: {} Hz\nTasa de muestreo: {:.6f} ms\n# de muestras: {:d}\n'\
                 ).format(self._wtype, self._time, str(self._wf), self._dt, self._ns)
 
 
@@ -552,7 +552,8 @@ class Seismic(object):
         plt.savefig(('fig/seismo_den{}.png').format(z+1), bbox_inches='tight')
 
     
-    def plot_seismogram(self, ymax=None, ymin = 0, maxtrace=0, z = 0, depth = False, excursion=1, angleVec=[]):
+    def plot_seismogram(self, ymax=None, ymin = 0, maxtrace=0, z = 0, depth = False, excursion=1, angleVec=[], \
+            prefix=''):
         '''
         Created by: Wes Hamlyn, 2014
         Modified by: Vidal Gonzalez P, 2018
@@ -567,22 +568,23 @@ class Seismic(object):
         xTitle = r'Ángulo de incidencia $\theta$ [$\circ$]'
         tvec = self._tvec
         excursion = excursion
-        fig = plt.figure(figsize=(18, 12))
+        figsize = max(int(angleVec.size*0.6), 12)
+        fig = plt.figure(figsize=(figsize, int(figsize*0.7)))
         gs = gridspec.GridSpec(1, 1)
         ax1 = plt.subplot(gs[0,0])
         self.plot_vawig(ax1, self._SEIS[z], tvec, excursion, maxtrace)
         ax1.set_ylim([ymin,ymax])
         ax1.set_xlim((-.999,maxtrace-.001))
         ax1.invert_yaxis()
-        ax1.set_xlabel(xTitle)
-        ax1.set_ylabel(yLabel)
+        ax1.set_xlabel(xTitle, fontsize=14)
+        ax1.set_ylabel(yLabel, fontsize=14)
         if len(angleVec):
             plt.xticks([])
             locs = range(maxtrace)
             plt.xticks(locs, tuple(map(lambda x: ('{:2.1f}').format(x), \
                     angleVec[:len(locs)])))
         plt.tight_layout()
-        plt.savefig(('fig/seismo_wig{}.png').format(z+1), bbox_inches='tight')
+        plt.savefig(('fig/'+prefix+'seismo_wig{}.png').format(z+1), bbox_inches='tight')
 
     def plot_vawig(self, axhdl, data, t, excursion, maxtrace):
         '''

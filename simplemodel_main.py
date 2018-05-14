@@ -6,11 +6,11 @@ from utils import*
 from simplemodel import simple_array_maker
 
 def main():
+    print('\n######## GeoComp: Trazado de Rayos y analisis AFVO ########\n\n')
     import time
     start = time.time()
     if len(sys.argv) > 1:
         mtype, Aq = sys.argv[1], sys.argv[2]
-    
     mod = Model(mtype)
     dt = 0.0001 #ms
     topdepth = 2005
@@ -26,6 +26,13 @@ def main():
     dimX = TH.shape[1]
     dimY = int(TB[TB!=0].max()/dt * (1.05))
     dimZ = TH.shape[0]
+    
+    print(mod)
+    print('\n\tInformacion general de la simulacion:\n')
+    print(('Tasa de muestreo dt={}s\nProfundidad del tope = {} m\nAngulo Maximo = {}\nEspesor maximo = {} m\nAtenuacion Q50 ={}').format(dt, topdepth, angmax, dhmax, Aq))
+    print(Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=dt))
+    print(('\n\tDimensiones del cubo sintetico DH-Gather a generar:\n(angulos x muestras x espesores)\n{} x {} x {}').format(dimX, dimY, dimZ))
+
 
     global seismik, ymin, ymax
     ymax = dimY*dt
@@ -42,9 +49,9 @@ def main():
     Bmax = TB
     Bmax[Bmax>0] += 0.1
     
-    print('\nStarting AFVO single computations\n')
+    print('\n\tIniciando calculos individuales de AFVO\n')
     for dh in range(0, seismik.zLen, 5):
-        print(('AFVO for dh = {}m').format(dh * dhstep + dhmin))
+        print(('AFVO para espesor dh = {}m').format(dh * dhstep + dhmin))
         plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
                 Bmax[dh], seismik.dt, sps[dh],('TopBase_{}').format(dh * dhstep + dhmin))
         seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh, \
@@ -52,6 +59,7 @@ def main():
         plt.close('all') 
     
     dh = seismik.zLen - 1
+    print(('AFVO para espesor dh = {}m').format(dh * dhstep + dhmin))
     seismik.plot_seismogram(ymin=ymin, ymax=ymax, maxtrace=sps[dh], excursion=3, z=dh, angleVec=np.degrees(TH[dh]))
     plot_AFVO(seismik.get_amplitude[dh], np.degrees(TH[dh]), Tmin[dh], Tmax[dh], Bmin[dh], \
             Bmax[dh], seismik.dt,sps[dh],('TopBase_{}').format(dh*dhstep+dhmin))
@@ -64,7 +72,7 @@ def main():
     theta = np.degrees(TH.reshape(totalTraces))
     dh = DH.reshape(totalTraces) 
   
-    print('\nStarting AFVO map computations: Top reflector')
+    print('\n\tIniciando calculos de mapas AFVO: Reflector Tope')
     tminT = tt - 0.1
     tmaxT = 0.5 * (tt + tb)
 
@@ -85,7 +93,7 @@ def main():
     plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[3], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'freq', 'BsimpleTop')
 
-    print('\nStarting AFVO map computations: Base reflector')
+    print('\n\tIniciando calculos de mapas AFVO: Reflector Base')
     tminB = 0.5 * (tb + tt)
     tmaxB = tb + 0.1 
     
@@ -100,7 +108,7 @@ def main():
             ['dhT','angleT'], 'freq', 'BsimpleBase')
  
     end = time.time()
-    print(("\nElapsed time {}s\n").format(end - start))
+    print(("\nTiempo de la simulacion {}s\n").format(end - start))
 
     plt.close('all') 
     return 0
