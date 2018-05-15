@@ -14,6 +14,35 @@ __email__ = "vidalgonz8@gmail.com"
 __status__ = "En Desarrollo"
 
 import numpy as np
+from seisclass import*
+
+
+def create_timeModel(seismic, model, dtc, Theta, tBottom, tTop, Q=False):
+    print('\n\n Cálculos del modelo de cuña sintético\n\n')
+    FreqVel = model.vp[0]
+    for z in range(seismic.zLen):
+        print(('DH #{} de {}').format(z+1, seismic.zLen))
+        for x in range(seismic.xTraces):
+            R = ReflectivityS( ns = seismic.ySamples )
+            #top reflector
+            digitize_top_base(R, model, dtc, Theta[z][x], tTop[z][x], 'top')
+            Wv = Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=seismic.dt)
+            #Wv = Wavelet(wtype='r', wf=75)
+            if Q:
+                Wv.apply_Q(tTop[z][x], FreqVel)
+            trace = Trace(wavelet = Wv, rseries = R.rserie)
+            #base reflector
+            R = ReflectivityS( ns = seismic.ySamples )
+            digitize_top_base(R, model, dtc, Theta[z][x], tBottom[z][x], 'base')
+            Wv = Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=seismic.dt)
+            #Wv = Wavelet(wtype='r', wf=75)
+            if Q:
+                Wv.apply_Q(tBottom[z][x], FreqVel)
+            traceB = Trace(wavelet = Wv, rseries = R.rserie)
+            trace+= traceB
+            #calculation made on individual trace are made here
+            seismic.add_trace(trace, x, z)
+
 
 def alpha_tr(angle_in, V1, V2):
     return np.arcsin(np.sin(angle_in) * V2 / V1)

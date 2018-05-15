@@ -2,8 +2,7 @@ import sys
 import numpy as np
 from seisclass import*
 from AFVOplots import*
-from utils import*
-from wedgemodel import wedge_array_maker, CDPgather
+from wedgemodel import*
 
 def main():
     print('\n######## GeoComp: Trazado de Rayos y analisis AFVO ########\n\n')
@@ -27,7 +26,7 @@ def main():
             TT, TB, DHU, DHL)
 
     dimX = TH.shape[1]
-    dimY = int(TB.max()/dt * (1.02))
+    dimY = int(TB.max()/dt * (1.1))
     dimZ = TH.shape[0]
 
     print(mod)

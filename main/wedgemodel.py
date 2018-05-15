@@ -1,5 +1,32 @@
 import numpy as np
-from seisclass import Model
+from seisclass import* 
+
+def create_timewedgeModel(seismic, model, dtc, Theta, Beta, tBottom, tTop, wedgeAngle, Q=False):
+    print('\n\n Cálculos del modelo de cuña sintético\n\n')
+    FreqVel = model.vp[0]
+    for z in range(seismic.zLen):
+        print(('CDP #{} de {}').format(z+1, seismic.zLen))
+        for x in range(seismic.xTraces):
+            R = ReflectivityS( ns = seismic.ySamples )
+            #top reflector
+            digitize_wedge(R, model, dtc, Theta[z][x], Beta[z][x], tTop[z][x], 'top', wedgeAngle)
+            Wv = Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=seismic.dt)
+            #Wv = Wavelet(wtype='r', wf=75)
+            if Q:
+                Wv.apply_Q(tTop[z][x], FreqVel)
+            trace = Trace(wavelet = Wv, rseries = R.rserie)
+            #base reflector
+            R = ReflectivityS( ns = seismic.ySamples )
+            digitize_wedge(R, model, dtc, Theta[z][x], Beta[z][x], tBottom[z][x], 'base', wedgeAngle)
+            Wv = Wavelet(wtype='bp', wf=[5, 10, 40, 80], duration=0.28, wdt=seismic.dt)
+            #Wv = Wavelet(wtype='r', wf=75)
+            if Q:
+                Wv.apply_Q(tBottom[z][x], FreqVel)
+            traceB = Trace(wavelet = Wv, rseries = R.rserie)
+            trace+= traceB
+            #calculation made on individual trace are made here
+            seismic.add_trace(trace, x, z)
+
 
 def Xmin(angmax, topDepth):
     return -np.tan(angmax) * topDepth
