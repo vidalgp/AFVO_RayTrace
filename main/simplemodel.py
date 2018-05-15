@@ -70,7 +70,6 @@ def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=False):
         radmax_upwards = min(np.arcsin(v2/v1), alpha_tr(radmax_downwards, v1, v2))
     except:
         radmax_upwards = alpha_tr(radmax_downwards, v1, v2)
-    
     Angles_in = np.zeros(0, dtype='float')
     Angles_top = np.zeros(0, dtype='float')
     Angles_base = np.zeros(0, dtype='float')
@@ -87,7 +86,7 @@ def cmp_gather_simple(dh, maxAng, step, topDepth, velocities, critical=False):
                 break
         else:    
             try:
-                if (theta >= np.radians(maxAng)):
+                if ((theta >= np.radians(maxAng)) or (rad_in >= np.radians(maxAng))):
                     break
             except:
                 break
