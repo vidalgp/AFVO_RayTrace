@@ -17,8 +17,8 @@ do
         echo _______________ MODELO ${MNAME[$k]} Q $e ___________________
         python3 -u simplemodel_main.py $j $e | tee konsole.log
         cd ../../
-        tar -czvf finalsimple/simple_$e$j.tar.gz AFVO_RayTrace/
-        cd AFVO_RayTrace/main/
+        tar -czvf finalsimple/simple_$e$j.tar.gz USB-AFVA/
+        cd USB-AFVA/main/
         rm fig/*.png
         ((k++))
     done

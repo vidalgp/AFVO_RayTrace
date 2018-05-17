@@ -14,7 +14,7 @@ __email__ = "vidalgonz8@gmail.com"
 __status__ = "En Desarrollo"
 
 import numpy as np
-from seisclass import*
+from seisig import*
 
 
 def create_timeModel(seismic, model, dtc, Theta, tBottom, tTop, Q=False):

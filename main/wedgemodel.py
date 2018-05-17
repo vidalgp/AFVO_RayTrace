@@ -1,5 +1,5 @@
 import numpy as np
-from seisclass import* 
+from seisig import* 
 
 def create_timewedgeModel(seismic, model, dtc, Theta, Beta, tBottom, tTop, wedgeAngle, Q=False):
     print('\n\n Cálculos del modelo de cuña sintético\n\n')

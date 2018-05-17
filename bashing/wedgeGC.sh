@@ -17,8 +17,8 @@ do
         echo _______________ MODELO ${MNAME[$k]} Q $e ___________________
         python3 -u wedgemodel_main.py $j $e 100 | tee konsole.log
         cd ../../
-        tar -czvf finalwedge/wedge$e$j.tar.gz AFVO_RayTrace/
-        cd AFVO_RayTrace/main/
+        tar -czvf finalwedge/wedge$e$j.tar.gz USB-AFVA/
+        cd USB-AFVA/main/
         rm fig/*.png
         ((k++))
     done

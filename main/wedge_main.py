@@ -1,7 +1,7 @@
 import sys
 import numpy as np
-from seisclass import*
-from AFVOplots import*
+from seisig import*
+from AFVAplots import*
 from wedgemodel import*
 
 def main():
