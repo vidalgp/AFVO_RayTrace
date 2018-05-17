@@ -51,7 +51,7 @@ def main():
     Bmax[Bmax>0] += 0.1
     
     print('\n\tIniciando calculos individuales de AFVO\n')
-    for cdp in range(0, seismik.zLen, 6):
+    for cdp in range(0, seismik.zLen, int(nsrc/8)):
         print(('AFVO para CDP = {}m').format(cdpVector[cdp]))
         plot_AFVO(seismik.get_amplitude[cdp], np.degrees(TH[cdp]), Tmin[cdp], Tmax[cdp], Bmin[cdp], \
             Bmax[cdp], seismik.dt,sps[cdp],('TopBase_{}').format(cdpVector[cdp]))

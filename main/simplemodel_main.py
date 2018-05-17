@@ -49,7 +49,7 @@ def main():
     Bmax[Bmax>0] += 0.1
     
     print('\n\tIniciando calculos individuales de AFVO\n')
-    for dh in range(0, seismik.zLen, int(nsrc/8)):
+    for dh in range(0, seismik.zLen, 6):
         print(('AFVO para espesor dh = {}m').format(dh * dhstep + dhmin))
         plot_AFVO(seismik.get_amplitude[dh],np.degrees(TH[dh]),Tmin[dh],Tmax[dh],Bmin[dh],\
                 Bmax[dh], seismik.dt, sps[dh],('TopBase_{}').format(dh * dhstep + dhmin))
