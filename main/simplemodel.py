@@ -5,13 +5,10 @@
 #   Author: Vidal Gonzalez P
 #    Email: vidalgonz8@gmail.com
 # --------------------------------------------------------------------
-"""
-Code to analyze synthetic seismic data considering AVO in a \
-        wedge model using CWT, for amplitude and frequency analysis.
-"""
+
 __author__ = "Vidal Gonzalez P"
 __email__ = "vidalgonz8@gmail.com"
-__status__ = "En Desarrollo"
+__status__ = "Completado"
 
 import numpy as np
 from seisig import*

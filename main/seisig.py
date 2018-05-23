@@ -1,7 +1,7 @@
 #!/usr/bin/nv python
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------
-# Filename: seisclass.py
+# Filename: seisig.py
 #  Purpose: Seismic Signal Analysis
 #   Author: Vidal Gonzalez P
 #    Email: vidalgonz8@gmail.com
@@ -612,25 +612,7 @@ class Seismic(object):
 ###################################################################################
 
 def main():
-    global ss
-    ss = Seismic(1, 100, 5000) 
-    w = Wavelet(wtype='bp', wf=[15,35,55,75], wdt=0.0001)
-    rs = ReflectivityS(ns=5000) 
-    rs.add_pulse(700, 0.5)
-    rs.add_pulse(2500, -.1)
-    rs.add_pulse(2000, .71)
-    rs.add_pulse(4000, -.29)
-    tr = Trace(dt=0.001, wavelet=w, rseries=rs.rserie)
-    for i in range(ss.xTraces):
-        ss.add_trace(tr, i, 0)
-    
-    ss.plot_seismogram(angleVec=np.random.randn(100)); plt.show()
-    ss.plot_density()
-    
-    plt.show()
-
     return 0
-
 
 if (__name__ == '__main__'):
     main()

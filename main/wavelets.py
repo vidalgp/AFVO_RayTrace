@@ -1,7 +1,7 @@
 #!/usr/bin/nv python
 # -*- coding: utf-8 -*-
 # ------------------------------------------------------------------
-# Filename: classfunctions.py
+# Filename: wavelets.py
 #  Purpose: Signal Analysis
 #   Author: Vidal Gonzalez P
 #    Email: vidalgonz8@gmail.com

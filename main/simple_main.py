@@ -80,8 +80,6 @@ def main():
     fullArray.T[2] = AVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminT, tmaxT, seismik.dt)
 
-    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
-
     xmin = np.floor(fullArray.T[1].min())
     xmax = np.ceil(fullArray.T[1].max())
     ymin = np.floor(fullArray.T[0].min())
@@ -99,7 +97,6 @@ def main():
     fullArray.T[2] = AVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
     fullArray.T[3] = FVO(seismik.get_amplitude, tminB, tmaxB, seismik.dt)
 
-    #fullArray = fullArray[~np.isnan(fullArray).any(axis=1)]
 
     plot_map(fullArray.T[1], fullArray.T[0], fullArray.T[2], xmin, xmax, ymin, ymax,\
             ['dhT','angleT'], 'amp', 'BsimpleBase')
